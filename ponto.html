@@ -1,0 +1,55 @@
+<h2>Registro de Ponto</h2>
+<p>Registre suas horas de trabalho e visualize seu histórico.</p>
+<br>
+
+<div class="accordion-container">
+  <!-- Grupo Bater Ponto -->
+  <details class="accordion-group">
+    <summary class="accordion-title">Bater Ponto</summary>
+    <div class="accordion-content">
+      <p>Selecione a data e hora para registrar sua entrada ou saída.</p>
+      <br>
+      <div class="form-container">
+        <div class="form-inputs-group">
+          <input type="date" id="ponto-date" class="form-input" />
+          <div class="time-control-group">
+            <input type="time" id="ponto-time" class="form-input" />
+            <button type="button" class="time-adjust-btn" data-adjust="-1">-1</button>
+            <button type="button" class="time-adjust-btn" data-adjust="-5">-5</button>
+          </div>
+        </div>
+        <!-- Mais pra frente teremos um BD e Rotinas para verificar se o ponto está fechado (e vamos registrar uma entrada) ou se está aberto (e vamos registrar uma saida) -->
+        <button type="button" class="tile">Registrar Ponto<br>Entrada/Saida</button>
+      </div>
+    </div>
+  </details>
+
+  <!-- Grupo Meu Espelho de Ponto -->
+  <details class="accordion-group">
+    <summary class="accordion-title">Meu Espelho de Ponto</summary>
+    <div class="accordion-content">
+      <div class="month-navigator">
+        <div class="month-nav-controls">
+          <button type="button" id="prev-month-btn" class="month-nav-btn">&lt;</button>
+          <button type="button" id="next-month-btn" class="month-nav-btn">&gt;</button>
+        </div>
+        <h3 id="current-month-display">-- / ----</h3>
+      </div>
+      <div class="table-container">
+        <table class="point-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="point-table-body">
+            <!-- As linhas da tabela serão carregadas dinamicamente aqui -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+</div>

@@ -115,6 +115,12 @@ h1 {
   background-color: var(--accent-color);
 }
 
+/* Estilo para o botão de navegação ativo */
+.nav-btn.active {
+  background-color: var(--accent-color);
+  font-weight: 700;
+}
+
 .button-icon {
   font-size: 24px;
 }
@@ -127,21 +133,197 @@ h1 {
 }
 
 .tile {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 120px;
   background-color: var(--accent-color);
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
+  border-radius: 16px;
   font-size: 20px;
   text-decoration: none;
   transition: transform 0.2s;
+  text-align: center;
 }
 
 .tile:hover {
   transform: scale(1.05);
   background-color: #2980b9;
+}
+
+/* --- Estilos para Accordion (Grupos Recolhíveis) --- */
+.accordion-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.accordion-group {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--accent-color);
+  overflow: hidden;
+}
+
+.accordion-title {
+  padding: 15px 20px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none; /* Remove o marcador padrão do <summary> */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordion-title::after {
+  content: '+';
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.accordion-group[open] > .accordion-title::after {
+  content: '−';
+}
+
+.accordion-title::-webkit-details-marker {
+  display: none; /* Remove o marcador padrão no Chrome/Safari */
+}
+
+.accordion-content {
+  padding: 20px;
+  border-top: 1px solid var(--accent-color);
+}
+
+/* --- Estilos para Navegador de Mês e Tabela --- */
+.month-navigator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.month-nav-controls {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.month-nav-btn {
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--text-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap; /* Impede que o texto quebre em duas linhas */
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.month-nav-btn:hover {
+  background-color: var(--accent-color);
+}
+
+#current-month-display {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.point-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.point-table th,
+.point-table td {
+  border: 1px solid var(--accent-color);
+  padding: 12px;
+  text-align: center;
+}
+
+.point-table th {
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 16px;
+}
+
+.point-table td {
+  font-size: 14px;
+}
+
+/* --- Estilos para Formulários dentro do Accordion --- */
+.form-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Alinha os itens na base */
+  gap: 20px;
+  flex-wrap: wrap; /* Permite quebrar a linha em telas menores */
+}
+
+.form-inputs-group {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.time-control-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-adjust-btn {
+  height: 50px;
+  width: 50px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-color);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.time-adjust-btn:hover {
+  background-color: var(--accent-color);
+}
+
+.form-input {
+  padding: 10px 15px;
+  height: 50px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-color);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+}
+
+/* Estilos para a barra de busca */
+.search-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-controls .form-input[type="text"] {
+  flex-grow: 1; /* Faz o campo de texto ocupar o espaço disponível */
+}
+
+
+/* Ajusta o botão 'tile' quando dentro de um form-container */
+.form-container .tile {
+  /* Remove a altura específica para herdar do .tile padrão (120px) */
+  /* Mantém um tamanho menor para o texto e padding horizontal */
+  padding: 0 30px;
+  font-size: 16px;
 }
 
 /* --- ESTADOS DA SIDEBAR --- */
@@ -187,4 +369,81 @@ body.sidebar-collapsed .nav-btn {
     transform: translateX(0);
   }
 }
+
+/* --- Estilos para Páginas com Sidebar Própria (Ex: Tarefas) --- */
+.page-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.page-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Ajusta o botão de nova tarefa para ter largura automática */
+#new-task-btn {
+  width: auto;
+  padding: 0 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.page-header-btn {
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.page-header-btn:hover {
+  background-color: var(--accent-color);
+}
+
+#task-sidebar {
+  position: fixed;
+  top: var(--header-height); /* Alinha com a parte de baixo do header principal */
+  right: 0;
+  width: 300px;
+  height: calc(100% - var(--header-height));
+  background-color: var(--primary-bg);
+  border-left: 1px solid var(--accent-color);
+  padding: 20px;
+  transform: translateX(100%); /* Começa oculta */
+  transition: transform 0.3s ease;
+  z-index: 900; /* Fica abaixo do menu principal mas acima do conteúdo */
+}
+
+/* Estado aberto da sidebar de tarefas */
+.task-sidebar-open #task-sidebar {
+  transform: translateX(0);
+}
+
+/* Ajusta o conteúdo principal quando a sidebar de tarefas está aberta */
+.task-sidebar-open .page-main-content {
+  transition: margin-right 0.3s ease;
+  margin-right: 300px;
+}
+
+@media (max-width: 1024px) {
+  .task-sidebar-open .page-main-content {
+    margin-right: 0; /* Em telas menores, a sidebar flutua sobre o conteúdo */
+  }
+}
+
+/* Ajusta botões de navegação dentro da sidebar de tarefas */
+#task-sidebar .nav-btn {
+  justify-content: flex-start;
 }

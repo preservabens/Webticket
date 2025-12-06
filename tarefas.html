@@ -1,0 +1,82 @@
+<div class="page-container">
+  <div class="page-main-content">
+    <div class="page-header">
+      <h2>Tarefas</h2>
+      <button type="button" class="page-header-btn" id="new-task-btn">Nova Tarefa</button>
+      <button id="task-sidebar-toggle" class="page-header-btn">☰</button>      
+    </div>
+    <p>Selecione uma tarefa da lista para ver os detalhes.</p>
+    <br>
+    <div class="accordion-container">
+      <!-- Acordion de Busca -->
+      <details class="accordion-group">
+        <summary class="accordion-title">Busca</summary>
+        <div class="accordion-content">
+          <div class="search-controls">
+            <input type="text" class="form-input" placeholder="Buscar por nome, CPF, endereço...">
+            <select class="form-input">
+              <option value="pessoa">Pessoa</option>
+              <option value="imovel">Imóvel</option>
+            </select>
+          </div>
+
+          <h4>Resultados da Busca</h4>
+          <div class="table-container" style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
+            <table class="point-table">
+              <thead>
+                <tr>
+                  <th>Nome / Endereço</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Resultados da busca por pessoa/imóvel aparecerão aqui -->
+              </tbody>
+            </table>
+          </div>
+
+          <h4 style="margin-top: 20px;">Chamados Relacionados</h4>
+          <div class="table-container" style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
+            <table class="point-table">
+              <!-- Cabeçalho da tabela de chamados -->
+              <tbody><!-- Chamados relacionados ao item selecionado acima aparecerão aqui --></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+
+      <!-- O primeiro accordion conterá a lista de tarefas, carregada dinamicamente. -->
+      <details class="accordion-group" open>
+        <summary class="accordion-title">Lista de Tarefas</summary>
+        <div class="accordion-content">
+          <!-- Este botão não seleciona a próxima tarefa da lista e sim a próxima tarefa a ser executada. A lógica seleciona as tarefas por data e acrescenta a prioridade (0-10, 0=urgente), mostrando primeiro a que tiver o menor número. Ao clicar, se a tarefa selecionada não for a de menor número, ele a seleciona. Se já for, ele seleciona a segunda de menor número. -->
+          <button type="button" class="tile" style="width: 100%; height: 60px; margin-bottom: 20px;">Próxima Tarefa</button>
+
+          <p>Abaixo será exibida a lista de tarefas. Clicar em uma tarefa preencherá o accordion "Tarefa Selecionada".</p>
+          <br>
+          <!-- Exemplo de item de lista -->
+          <ul>
+            <li><a href="#">Tarefa 1: Revisar Contrato de Venda</a></li>
+            <li><a href="#">Tarefa 2: Ligar para Cliente X</a></li>
+          </ul>
+        </div>
+      </details>
+
+      <!-- O segundo accordion será preenchido com os detalhes da tarefa selecionada no primeiro. -->
+      <details class="accordion-group">
+        <summary class="accordion-title">Tarefa Selecionada</summary>
+        <div class="accordion-content">
+          <p>Os detalhes, anexos e comentários da tarefa selecionada aparecerão aqui.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <aside id="task-sidebar">
+    <button type="button" class="nav-btn">
+      <span class="button-text">Home</span>
+    </button>
+    <button type="button" class="nav-btn">
+      <span class="button-text">Lista de Tarefas</span>
+    </button>
+  </aside>
+</div>
