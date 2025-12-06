@@ -5,7 +5,6 @@
   --secondary-bg: #1354A5;
   --text-color: #FFF;
   --accent-color: #1875E8;
-  --header-height: 70px;
 }
 
 * {
@@ -50,28 +49,6 @@ h1 {
   display: flex;
   flex-direction: column;
   height: 100vh;
-}
-
-#header {
-  height: var(--header-height);
-  background-color: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid var(--accent-color);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  color: var(--text-color);
-  flex-shrink: 0; /* Impede que o header encolha */
-}
-
-#header-toggle-btn {
-  display: none; /* Oculto por padrão */
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: 700;
-  margin-right: 20px;
-  background: none;
-  border: none;
-  color: var(--text-color);
 }
 
 #content-target {
@@ -414,10 +391,10 @@ body.sidebar-collapsed .nav-btn {
 
 #task-sidebar {
   position: fixed;
-  top: var(--header-height); /* Alinha com a parte de baixo do header principal */
+  top: 0;
   right: 0;
   width: 300px;
-  height: calc(100% - var(--header-height));
+  height: 100%;
   background-color: var(--primary-bg);
   border-left: 1px solid var(--accent-color);
   padding: 20px;

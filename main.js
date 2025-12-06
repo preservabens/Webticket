@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-  const headerToggleBtn = document.getElementById('header-toggle-btn');
   const body = document.body;
   const contentTarget = document.getElementById('content-target');
   const navButtons = document.querySelectorAll('.nav-btn');
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   sidebarToggleBtn.addEventListener('click', handleMenuToggle);
-  headerToggleBtn.addEventListener('click', handleMenuToggle);
 
   // --- DELEGAÇÃO DE EVENTOS PARA CONTEÚDO DINÂMICO ---
   contentTarget.addEventListener('click', (event) => {
