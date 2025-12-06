@@ -1,43 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Tarefas</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dashboard.css">
+  <title>Login - Painel de Tarefas</title>
 </head>
-
 <body>
-
-  <nav id="sidebar">
-    <button type="button" class="toggle-btn" id="sidebar-toggle-btn">☰</button>
-    <button type="button" class="nav-btn" data-page="tarefas.html">
-        <span class="button-icon">📋</span>
-        <span class="button-text">Tarefas</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="ponto.html">
-        <span class="button-icon">🕒</span>
-        <span class="button-text">Ponto</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="processos.html">
-        <span class="button-icon">🔀</span>
-        <span class="button-text">Processos</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="configuracoes.html">
-        <span class="button-icon">⚙️</span>
-        <span class="button-text">Configurações</span>
-    </button>
-  </nav>
-
-  <div id="main">
-    <main id="content-target"></main>
+  <div class="container">
+    <div class="container__conteudo">
+      <div class="container__informacoes">
+        <h1>Bem-vindo!</h1>
+        <p class="texto__paragrafo">Faça login para acessar o painel.</p>
+        <form id="login-form">
+          <div class="container__campo">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" class="container__input" value="admin" required>
+          </div>
+          <div class="container__campo">
+            <label for="password">Senha</label>
+            <input type="password" id="password" class="container__input" value="admin" required>
+          </div>
+          <div class="container__botoes">
+            <button type="submit" class="container__botao">Entrar</button>
+          </div>
+          <p id="error-message" style="color: red; margin-top: 10px; display: none;">Usuário ou senha inválidos.</p>
+        </form>
+      </div>
+    </div>
   </div>
 
-  <!-- O atributo 'defer' garante que o script só execute após o HTML ser analisado -->
-  <script src="main.js" defer></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Impede o envio padrão do formulário
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('error-message');
+
+      // Lógica de autenticação (por enquanto, admin/admin)
+      if (username === 'admin' && password === 'admin') {
+        // Redireciona para o painel principal em caso de sucesso
+        window.location.href = 'dashboard.html';
+      } else {
+        // Mostra a mensagem de erro
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
 
 </body>
 </html>

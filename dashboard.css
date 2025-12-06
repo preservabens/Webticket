@@ -381,8 +381,23 @@ body.sidebar-collapsed .nav-btn {
   width: 40px;
   height: 40px;
   font-size: 20px;
+  width: auto; /* Largura automática por padrão */
+  padding: 0 20px; /* Espaçamento para botões com texto */
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+.page-header-btn:hover {
+  background-color: var(--accent-color);
+}
+
+/* Garante que o botão de menu (ícone) continue quadrado */
+#task-sidebar-toggle {
+  width: 40px;
+  padding: 0;
+  font-size: 20px;
 }
 
 .page-header-btn:hover {
@@ -423,4 +438,23 @@ body.sidebar-collapsed .nav-btn {
 /* Ajusta botões de navegação dentro da sidebar de tarefas */
 #task-sidebar .nav-btn {
   justify-content: flex-start;
+}
+
+/* --- Estilos para Cabeçalho de Processos --- */
+.process-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--accent-color);
+}
+
+.breadcrumb {
+  font-size: 22px;
+}
+
+.breadcrumb span {
+  color: var(--accent-color);
+  margin: 0 5px;
 }

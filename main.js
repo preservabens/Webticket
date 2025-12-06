@@ -94,6 +94,15 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.value = `${year}-${month}-${day}`;
       }
     }
+
+    // Verifica se o clique foi em um botão que carrega uma página (ex: Voltar, ou um tile de processo)
+    const targetButton = event.target.closest('[data-page]');
+    if (targetButton && !targetButton.classList.contains('nav-btn')) {
+        const page = targetButton.dataset.page;
+        if (page) {
+            loadPage(page);
+        }
+    }
   });
 
   // --- LÓGICA DE CARREGAMENTO DE PÁGINA ---
@@ -202,5 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Carrega a página inicial por padrão
   if (navButtons.length > 0) {
     navButtons[0].click();
+  }
+
+  // Lógica do botão de Logout
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      window.location.href = 'Index.html';
+    });
   }
 });
