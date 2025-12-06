@@ -57,21 +57,6 @@ h1 {
   overflow-y: auto;
 }
 
-/* --- Estilos da Sidebar --- */
-.toggle-btn {
-  cursor: pointer;
-  padding: 20px 15px;
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 700;
-  text-align: center;
-  color: var(--text-color);
-  display: block;
-  background: none;
-  border: none;
-  width: 100%;
-}
-
 .nav-btn {
   padding: 15px 25px;
   text-decoration: none;
@@ -337,10 +322,6 @@ body.sidebar-collapsed .nav-btn {
     margin-left: 0;
   }
 
-  #header-toggle-btn {
-    display: block; /* Mostra o botão de menu no cabeçalho */
-  }
-
   /* 3. Estado Aberto (Mobile) - Ao clicar no botão */
   body.sidebar-open #sidebar {
     transform: translateX(0);
@@ -354,12 +335,6 @@ body.sidebar-collapsed .nav-btn {
   height: 100%;
 }
 
-.page-title-group {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
 /* Ajusta o botão de nova tarefa para ter largura automática */
 #new-task-btn {
   width: auto;
@@ -369,6 +344,12 @@ body.sidebar-collapsed .nav-btn {
 .page-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-title-group {
+  display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
@@ -396,6 +377,26 @@ body.sidebar-collapsed .nav-btn {
   width: 40px;
   padding: 0;
   font-size: 20px;
+}
+
+.page-menu-toggle-btn {
+  display: none; /* Oculto por padrão */
+  width: 40px;
+  padding: 0;
+  font-size: 20px;
+  margin-right: 15px;
+}
+
+/* Exibe o botão de menu em telas grandes QUANDO a sidebar está recolhida */
+body.sidebar-collapsed .page-menu-toggle-btn {
+  display: block;
+}
+
+/* Exibe o botão de menu em telas pequenas (onde a sidebar pode ser ocultada) */
+@media (max-width: 768px) {
+  .page-menu-toggle-btn {
+    display: block;
+  }
 }
 
 .page-header-btn:hover {

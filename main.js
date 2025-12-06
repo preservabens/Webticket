@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
   const body = document.body;
   const contentTarget = document.getElementById('content-target');
   const navButtons = document.querySelectorAll('.nav-btn');
@@ -29,10 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  sidebarToggleBtn.addEventListener('click', handleMenuToggle);
-
   // --- DELEGAÇÃO DE EVENTOS PARA CONTEÚDO DINÂMICO ---
   contentTarget.addEventListener('click', (event) => {
+    // Verifica se o clique foi no botão de menu da página
+    const pageMenuBtn = event.target.closest('.page-menu-toggle-btn');
+    if (pageMenuBtn) {
+      handleMenuToggle();
+      return; // Encerra para não processar outros cliques
+    }
+
     // Verifica se o clique foi em um título de accordion
     if (event.target.classList.contains('accordion-title')) {
       event.preventDefault();
@@ -178,10 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', () => {
       const page = button.dataset.page;
       if (!page) return; // Ignora botões sem data-page
-
+      
+      // Atualiza o estado ativo e carrega a página
       navButtons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
       loadPage(page);
+
+      // --- LÓGICA PARA RECOLHER/OCULTAR O MENU APÓS O CLIQUE ---
+      if (isMobileView) {
+        // Em mobile, sempre fecha o menu (remove a classe 'sidebar-open')
+        body.classList.remove('sidebar-open');
+      } else {
+        // Em desktop, apenas recolhe o menu se ele estiver expandido
+        body.classList.add('sidebar-collapsed');
+      }
     });
   });
 
