@@ -1,0 +1,190 @@
+:root {
+  --sidebar-width: 250px;
+  --sidebar-width-collapsed: 80px;
+  --primary-bg: #041832;
+  --secondary-bg: #1354A5;
+  --text-color: #FFF;
+  --accent-color: #1875E8;
+  --header-height: 70px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(#1354A5 0%, #041832 33.33%, #041832 66.67%, #01080E 100%);
+  color: var(--text-color);
+  transition: margin-left 0.3s ease;
+  height: 100vh;
+  overflow: hidden; /* Impede o scroll do body */
+}
+
+h1 {
+    font-family: 'Chakra Petch', sans-serif;
+}
+
+/* --- Estrutura Principal --- */
+#sidebar {
+  height: 100%;
+  width: var(--sidebar-width);
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  background-color: var(--primary-bg);
+  overflow-x: hidden;
+  padding-top: 20px;
+  transition: width 0.3s ease, transform 0.3s ease;
+  white-space: nowrap;
+  border-right: 1px solid var(--accent-color);
+}
+
+#main {
+  transition: margin-left 0.3s ease;
+  padding: 0;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#header {
+  height: var(--header-height);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--accent-color);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  color: var(--text-color);
+  flex-shrink: 0; /* Impede que o header encolha */
+}
+
+#header-toggle-btn {
+  display: none; /* Oculto por padrão */
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  margin-right: 20px;
+  background: none;
+  border: none;
+  color: var(--text-color);
+}
+
+#content-target {
+  padding: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+/* --- Estilos da Sidebar --- */
+.toggle-btn {
+  cursor: pointer;
+  padding: 20px 15px;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-color);
+  display: block;
+  background: none;
+  border: none;
+  width: 100%;
+}
+
+.nav-btn {
+  padding: 15px 25px;
+  text-decoration: none;
+  font-size: 18px;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: 0.2s;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.nav-btn:hover {
+  background-color: var(--accent-color);
+}
+
+.button-icon {
+  font-size: 24px;
+}
+
+/* --- Estilo Windows 8 para botões (Exemplo) --- */
+.tile-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.tile {
+  width: 150px;
+  height: 150px;
+  background-color: var(--accent-color);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.tile:hover {
+  transform: scale(1.05);
+  background-color: #2980b9;
+}
+
+/* --- ESTADOS DA SIDEBAR --- */
+
+/* 1. Estado Recolhido (Desktop) */
+body.sidebar-collapsed #sidebar {
+  width: var(--sidebar-width-collapsed);
+}
+
+body.sidebar-collapsed #main {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+body.sidebar-collapsed .nav-btn .button-text {
+  display: none;
+}
+
+body.sidebar-collapsed .nav-btn {
+  justify-content: center;
+  padding: 15px 10px;
+}
+
+/* --- RESPONSIVIDADE --- */
+
+@media (max-width: 768px) {
+  /* 2. Estado Oculto (Mobile) - Padrão */
+  #sidebar {
+    transform: translateX(-100%);
+    /* Garante que o menu fique por cima do conteúdo em mobile */
+    z-index: 1000; 
+  }
+
+  #main {
+    margin-left: 0;
+  }
+
+  #header-toggle-btn {
+    display: block; /* Mostra o botão de menu no cabeçalho */
+  }
+
+  /* 3. Estado Aberto (Mobile) - Ao clicar no botão */
+  body.sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+}
+}
