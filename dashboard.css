@@ -248,6 +248,12 @@ h1 {
   transition: background-color 0.2s;
   flex-shrink: 0; /* Impede que o botão encolha */
 }
+
+/* Adiciona rolagem horizontal para a tabela em telas pequenas */
+.table-container {
+  overflow-x: auto;
+}
+
 .point-table {
   width: 100%;
   border-collapse: collapse;
@@ -447,6 +453,11 @@ body.sidebar-collapsed .nav-btn {
   .month-navigator {
     flex-direction: column;
     gap: 15px;
+  }
+
+  /* Empilha os controles de busca em telas pequenas */
+  .search-controls {
+    flex-direction: column;
   }
 
   /* 3. Estado Aberto (Mobile) - Ao clicar no botão */
