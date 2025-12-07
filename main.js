@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
   const contentTarget = document.getElementById('content-target');
   const navButtons = document.querySelectorAll('.nav-btn');
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
 
   // Variável para controlar o mês/ano do espelho de ponto
   let pointSheetDate = new Date();
@@ -27,6 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleDesktopSidebar();
     }
   };
+
+  // Adiciona o evento de clique para o botão principal de toggle da sidebar
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', handleMenuToggle);
+  }
 
   // --- DELEGAÇÃO DE EVENTOS PARA CONTEÚDO DINÂMICO ---
   contentTarget.addEventListener('click', (event) => {
@@ -222,9 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Executa a função uma vez no carregamento para definir o estado inicial correto
   handleResize();
 
-  // Carrega a página inicial por padrão
-  if (navButtons.length > 0) {
-    navButtons[0].click();
+  // Carrega a página inicial por padrão, clicando no primeiro botão que tem um 'data-page'
+  const initialPageButton = document.querySelector('.nav-btn[data-page]');
+  if (initialPageButton) {
+    initialPageButton.click();
   }
 
   // Lógica do botão de Logout

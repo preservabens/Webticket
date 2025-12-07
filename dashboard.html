@@ -13,22 +13,28 @@
 <body>
 
   <nav id="sidebar">
-    <button type="button" class="nav-btn" data-page="tarefas.html">
-        <span class="button-icon">📋</span>
-        <span class="button-text">Tarefas</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="ponto.html">
-        <span class="button-icon">🕒</span>
-        <span class="button-text">Ponto</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="processos.html">
-        <span class="button-icon">🔀</span>
-        <span class="button-text">Processos</span>
-    </button>
-    <button type="button" class="nav-btn" data-page="configuracoes.html">
-        <span class="button-icon">⚙️</span>
-        <span class="button-text">Configurações</span>
-    </button>
+    <div class="sidebar-main-nav">
+      <button type="button" class="nav-btn" id="sidebar-toggle-btn">
+          <span class="button-icon">☰</span>
+          <span class="button-text">Recolher Menu</span>
+      </button>
+      <button type="button" class="nav-btn" data-page="tarefas.html">
+          <span class="button-icon">📋</span>
+          <span class="button-text">Tarefas</span>
+      </button>
+      <button type="button" class="nav-btn" data-page="ponto.html">
+          <span class="button-icon">🕒</span>
+          <span class="button-text">Ponto</span>
+      </button>
+      <button type="button" class="nav-btn" data-page="processos.html">
+          <span class="button-icon">🔀</span>
+          <span class="button-text">Processos</span>
+      </button>
+      <button type="button" class="nav-btn" data-page="configuracoes.html">
+          <span class="button-icon">⚙️</span>
+          <span class="button-text">Configurações</span>
+      </button>
+    </div>
     <button type="button" class="nav-btn" id="logout-btn">
       <span class="button-icon">🚪</span>
       <span class="button-text">Sair</span>
@@ -36,7 +42,9 @@
   </nav>
 
   <div id="main">
-    <main id="content-target"></main>
+    <main id="content-target">
+      <p>Selecione um item do menu ao lado para começar.</p>
+    </main>
   </div>
 
   <!-- O atributo 'defer' garante que o script só execute após o HTML ser analisado -->

@@ -35,11 +35,13 @@ h1 {
   top: 0;
   left: 0;
   background-color: var(--primary-bg);
-  overflow-x: hidden;
-  padding-top: 20px;
   transition: width 0.3s ease, transform 0.3s ease;
   white-space: nowrap;
   border-right: 1px solid var(--accent-color);
+  /* Transforma a sidebar em um container flexível vertical */
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px; /* Mantém o espaço no topo */
 }
 
 #main {
@@ -85,6 +87,17 @@ h1 {
 
 .button-icon {
   font-size: 24px;
+}
+
+/* Permite que a área principal de navegação role se o conteúdo for maior que o espaço */
+.sidebar-main-nav {
+  overflow-y: auto;
+}
+
+/* Estilo para o botão de logout, para fixá-lo embaixo */
+#logout-btn {
+  margin-top: auto; /* Mágica do Flexbox: empurra o botão para o final */
+  margin-bottom: 20px; /* Adiciona um respiro na parte de baixo */
 }
 
 /* --- Estilo Windows 8 para botões (Exemplo) --- */
