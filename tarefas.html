@@ -66,6 +66,7 @@
           <thead>
             <tr>
               <th>Código</th>
+              <th>Data Conclusão</th>
               <th>Tipo</th>
               <th>Título</th>
               <th>Relacionado Principal</th>
@@ -74,12 +75,14 @@
           <tbody>
             <tr>
               <td>1245</td>
+              <td class="text-danger">05/12/2025</td>
               <td>Manutenção</td>
               <td>Vazamento de Gás</td>
               <td>Condomínio Mormar</td>
             </tr>
             <tr>
               <td>1472</td>
+              <td>05/12/2027</td>
               <td>Boletos</td>
               <td>Taxa a maior lançada</td>
               <td>Condomínio Mormar</td>
@@ -95,10 +98,16 @@
       -->
       <div class="memo-container">
         <div class="memo-header">
-          <button class="page-header-btn">Trabalhar com esse chamado</button>
+          <button id="btn-trabalhar-chamado" class="page-header-btn" data-task-id="1245">Trabalhar com esse chamado</button>
           <h4>Resumo do Chamado</h4>
         </div>
-        <textarea class="form-input memo-area" readonly>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam. Proin sed enim sed lorem consectetuer egestas. Suspendisse egestas, neque sed commodo commodo, magna nisl posuere mi, eu justo sem quis justo. Vivamus consectetuer, dolor nec pulvinar aliquam, lorem eros consectetuer elit, vitae lacinia tellus nulla quis odio. Curabitur vel urna. Ut vitae nisl. Nam et arcu. In hac habitasse platea dictumst. Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum enim nibh eget ipsum. Donec porttitor ligula eu dolor. Maecenas vitae sem. Nam scelerisque, quam eu pulvinar conubia nostra.</textarea>
+        <textarea class="form-input memo-area" readonly>Nesta tela, ao clicar em buscar, na primeira tabela ele irá mostrar uma lista de pessoas ou imóveis relacionados a busca. Na segunda tela irá mostrar, com a mesma busca, chamados que tenham o que está procurando. 
+
+Se clicar um resultado da primeira lista a segunda lsita atualizá com todos os chamados relacionados com essa pessoa. Inicialmente será sempre mostrando o chamado mais recente em cima e o menos recente em baixo. 
+
+Ao clicar na segunda tela ele atualiza este campo com um resumo/detalhamento de todo o chamado selecionado. 
+
+O clicar no botão trabalhar com esse chamaos ele carregará o chamado no item tarefa selecionada e minimizará esse item de busca.</textarea>
       </div>
     </div>
   </details>
@@ -123,6 +132,7 @@
           <thead>
             <tr>
               <th>Código</th>
+              <th>Data Conclusão</th>
               <th>TIPO</th>
               <th>Título da Tarefa</th>
               <th>Relação</th>
@@ -131,18 +141,21 @@
           <tbody>
             <tr>
               <td>1245</td>
+              <td class="text-danger">05/12/2025</td>
               <td>Manutenção</td>
               <td>Vazamento de Gás</td>
               <td>Condomínio Mormar</td>
             </tr>
             <tr>
               <td>1472</td>
+              <td>05/12/2027</td>
               <td>Boletos</td>
               <td>Taxa Maior Lançada</td>
               <td>Condomínio Mormar</td>
             </tr>
             <tr>
               <td>1466</td>
+              <td>05/12/2028</td>
               <td>Nova Locação</td>
               <td>Rio das Pedras 301</td>
               <td>Maria das Graças</td>
