@@ -108,13 +108,18 @@ h1 {
 }
 
 .tile {
-  width: 200px;
   height: 120px;
   background-color: var(--accent-color);
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
+  /* --- Alterações para Responsividade --- */
+  /* Remove a largura fixa e usa flexbox para se adaptar */
+  flex-grow: 1; /* Permite que o botão cresça para ocupar espaço */
+  flex-basis: 150px; /* Define um tamanho base. Em telas pequenas, ele pode encolher a partir daqui */
+  max-width: 200px; /* Impede que o botão fique muito largo em telas grandes */
+  /* --- Fim das Alterações --- */
   border-radius: 16px;
   font-size: 20px;
   text-decoration: none;
@@ -124,6 +129,7 @@ h1 {
 
 .tile:hover {
   transform: scale(1.05);
+  z-index: 1; /* Garante que o tile em hover fique por cima dos outros */
   background-color: #2980b9;
 }
 
