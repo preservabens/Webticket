@@ -22,9 +22,15 @@
             <button type="button" class="time-adjust-btn" data-adjust="-1">-1</button>
             <button type="button" class="time-adjust-btn" data-adjust="-5">-5</button>
           </div>
+          <input type="text" id="ponto-obs" class="form-input" placeholder="Observações (opcional)" />
         </div>
-        <!-- Mais pra frente teremos um BD e Rotinas para verificar se o ponto está fechado (e vamos registrar uma entrada) ou se está aberto (e vamos registrar uma saida) -->
-        <button type="button" class="tile">Registrar Ponto<br>Entrada/Saida</button>
+        <div class="form-action-group">
+          <div class="checkbox-container">
+            <input type="checkbox" id="home-office-check" />
+            <label for="home-office-check">Home Office</label>
+          </div>
+          <button type="button" class="tile">Registrar Ponto<br>Entrada/Saida</button>
+        </div>
       </div>
     </div>
   </details>
@@ -34,27 +40,84 @@
     <summary class="accordion-title">Meu Espelho de Ponto</summary>
     <div class="accordion-content">
       <div class="month-navigator">
+        <h3 id="current-month-display">-- / ----</h3>
         <div class="month-nav-controls">
           <button type="button" id="prev-month-btn" class="month-nav-btn">&lt;</button>
           <button type="button" id="next-month-btn" class="month-nav-btn">&gt;</button>
         </div>
-        <h3 id="current-month-display">-- / ----</h3>
+        <!-- 
+          Dropdown para seleção de colaborador.
+          Para funcionários sem permissão, este campo será desabilitado (somente leitura),
+          exibindo apenas o seu próprio nome. Para gestores, ele permite visualizar
+          o ponto de outros colaboradores da equipe.
+        -->
+        <div class="employee-selector-container">
+          <div class="input-with-button">
+            <select id="employee-selector" class="form-input">
+              <option>Colaborador 01</option>
+              <option>Colaborador 02</option>
+              <option>Colaborador 03</option>
+            </select>
+            <button type="button" id="print-report-btn" class="icon-btn" title="Imprimir Relatório em PDF">🖨️</button>
+          </div>
+        </div>
       </div>
       <div class="table-container">
         <table class="point-table">
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Entrada</th>
-              <th>Saída</th>
-              <th>Total</th>
+              <th class="col-action"></th>
+              <th class="col-date">Data</th>
+              <th class="col-time">Entrada</th>
+              <th class="col-time">Saída</th>
+              <th class="col-time">Total</th>
+              <th class="col-ho">Home<br>Office</th>
+              <th class="col-obs">Observações</th>
             </tr>
           </thead>
           <tbody id="point-table-body">
-            <!-- As linhas da tabela serão carregadas dinamicamente aqui -->
+            <!-- Linhas de exemplo -->
+            <tr>
+              <td>
+                <button class="table-action-btn" title="Editar Ponto">✏️</button>
+              </td>
+              <td>07/12/2025</td>
+              <td>08:00</td>
+              <td>12:00</td>
+              <td>4:00</td>
+              <td class="ho-nao">Não</td>
+              <td>Teste</td>
+            </tr>
+            <tr>
+              <td>
+                <button class="table-action-btn" title="Editar Ponto">✏️</button>
+              </td>
+              <td>07/12/2025</td>
+              <td>14:00</td>
+              <td>18:30</td>
+              <td>4:30</td>
+              <td class="ho-sim">Sim</td>
+              <td>Teste2</td>
+            </tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </details>
+
+  <!-- Grupo Quadro de Horários -->
+  <details class="accordion-group">
+    <summary class="accordion-title">Quadro de Horários e Remuneração</summary>
+    <div class="accordion-content">
+      <p>Aqui você pode consultar seu plano de horários e os valores de remuneração correspondentes.</p>
+      <br>
+      <h4>Plano de Horários:</h4>
+      <p><strong>Segunda a Sexta:</strong> 08:00 - 12:00 / 14:00 - 18:00</p>
+      <p><strong>Sábado:</strong> 08:00 - 12:00</p>
+      <br>
+      <h4>Remuneração:</h4>
+      <p><strong>Valor Hora:</strong> R$ XX,XX</p>
+      <p><strong>Valor Hora Extra (100%):</strong> R$ YY,YY</p>
     </div>
   </details>
 </div>

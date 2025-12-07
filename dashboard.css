@@ -184,6 +184,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap; /* Permite que os itens quebrem a linha */
 }
 
 .month-nav-controls {
@@ -213,9 +214,40 @@ h1 {
 #current-month-display {
   font-size: 18px;
   font-weight: 700;
-  text-align: right;
+  text-align: left; /* Alinha o texto à esquerda agora */
 }
 
+/* Ajusta a altura do seletor de funcionário para alinhar com os botões */
+.month-navigator .form-input {
+  height: 42px; 
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Container para agrupar um input com um botão */
+.input-with-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-with-button .form-input {
+  flex-grow: 1; /* Faz o select ocupar o espaço disponível */
+}
+
+/* Estilo para botões que contêm apenas um ícone */
+.icon-btn {
+  background: none;
+  border: 1px solid var(--accent-color);
+  color: var(--text-color);
+  height: 42px;
+  width: 42px;
+  border-radius: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0; /* Impede que o botão encolha */
+}
 .point-table {
   width: 100%;
   border-collapse: collapse;
@@ -236,6 +268,56 @@ h1 {
 
 .point-table td {
   font-size: 14px;
+}
+
+/* --- Estilos para Largura das Colunas da Tabela de Ponto --- */
+.point-table {
+  table-layout: fixed; /* Garante que as larguras definidas sejam respeitadas */
+}
+
+.point-table .col-action {
+  width: 60px;
+}
+
+.point-table .col-date {
+  width: 110px;
+}
+
+.point-table .col-time {
+  width: 90px;
+}
+
+.point-table .col-ho {
+  width: 90px;
+}
+
+.point-table .col-obs {
+  width: auto; /* Ocupa o espaço restante */
+}
+
+.point-table .ho-sim {
+  color: #ff5252; /* Vermelho claro para boa legibilidade */
+  font-weight: 700;
+}
+
+.point-table .ho-nao {
+  color: #90ee90; /* Verde claro para boa legibilidade */
+  font-weight: 700;
+}
+
+.table-action-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.table-action-btn:hover {
+  transform: scale(1.2);
+  color: var(--accent-color);
 }
 
 /* --- Estilos para Formulários dentro do Accordion --- */
@@ -307,6 +389,26 @@ h1 {
   font-size: 16px;
 }
 
+/* Grupo de Ação do Formulário (botão + checkbox) */
+.form-action-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
 /* --- ESTADOS DA SIDEBAR --- */
 
 /* 1. Estado Recolhido (Desktop) */
@@ -339,6 +441,12 @@ body.sidebar-collapsed .nav-btn {
 
   #main {
     margin-left: 0;
+  }
+  
+  /* Empilha os controles do navegador de mês em telas pequenas */
+  .month-navigator {
+    flex-direction: column;
+    gap: 15px;
   }
 
   /* 3. Estado Aberto (Mobile) - Ao clicar no botão */
