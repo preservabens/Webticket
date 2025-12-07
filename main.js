@@ -105,6 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Verifica se o clique foi no botão "Próxima Tarefa"
+    if (event.target.id === 'btn-proxima-tarefa') {
+      selecionarProximaTarefa();
+      return; // Encerra para não processar outros cliques
+    }
+
     // Verifica se o clique foi em um botão que carrega uma página (ex: Voltar, ou um tile de processo)
     const targetButton = event.target.closest('[data-page]');
     if (targetButton && !targetButton.classList.contains('nav-btn')) {
@@ -131,6 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Executa scripts específicos da página após o carregamento
       if (page === 'ponto.html') {
         initializePontoPage();
+      }
+      if (page === 'tarefas.html') {
+        initializeTarefasPage();
       }
     } catch (error) {
       console.error('Falha no fetch:', error);
@@ -183,6 +192,132 @@ document.addEventListener('DOMContentLoaded', () => {
       nextBtn.innerHTML = `${nextMonthName.charAt(0).toUpperCase() + nextMonthName.slice(1)} &gt;`;
     }
   };
+
+  // Função para inicializar a página de tarefas
+  const initializeTarefasPage = () => {
+    // Encontra o botão "Próxima tarefa"
+    const btnProxima = document.getElementById('btn-proxima-tarefa');
+    if (btnProxima) {
+      // Simula o clique no botão para carregar a tarefa mais importante
+      // assim que a página de tarefas é aberta.
+      btnProxima.click();
+    } // fim do if (btnProxima)
+  }; // fim da função initializeTarefasPage
+
+  /**
+   * Encontra e seleciona a próxima tarefa mais prioritária.
+   * A lógica de priorização segue duas regras principais:
+   * 1. **Intercalação por Tipo:** As tarefas são separadas em "novas" (vindas de clientes) e "sistema" (internas).
+   *    A lista final é montada intercalando uma tarefa de cada tipo (nova, sistema, nova, sistema...).
+   * 2. **Prioridade por Score:** Dentro de cada tipo, a tarefa escolhida é sempre a mais urgente, calculada
+   *    pelo score (data de conclusão + prioridade de 0 a 10).
+   * 3. **Seleção:** O sistema sempre aponta para a primeira tarefa da lista final intercalada. Se ela já
+   *    estiver selecionada, aponta para a segunda, forçando o andamento.
+   */
+  const selecionarProximaTarefa = () => {
+    // Esta função buscaria as tarefas da API. Por enquanto, usamos dados de exemplo.
+    // A data de conclusão está no formato 'YYYY-MM-DD'.
+    // Adicionamos o campo 'tipo' para diferenciar as tarefas.
+    const listaDeTarefas = [
+      { id: 1245, titulo: 'Vazamento de Gás', dataConclusao: '2025-12-10', prioridade: 1, tipo: 'sistema' },
+      { id: 1472, titulo: 'Taxa Maior Lançada', dataConclusao: '2025-12-15', prioridade: 5, tipo: 'nova' },
+      { id: 1466, titulo: 'Nova Locação Rio das Pedras 301', dataConclusao: '2025-12-20', prioridade: 3, tipo: 'sistema' },
+      { id: 1890, titulo: 'Verificar documentação', dataConclusao: '2025-12-10', prioridade: 8, tipo: 'sistema' },
+      { id: 1950, titulo: 'Email: Dúvida sobre reajuste', dataConclusao: '2025-12-09', prioridade: 2, tipo: 'nova' }, // A "nova" mais urgente
+    ];
+
+    // Simula a obtenção do ID da tarefa que está atualmente selecionada na tela.
+    // No futuro, isso virá do estado da aplicação ou de um elemento do DOM.
+    // Para testar, você pode trocar este valor para 1245.
+    const idTarefaSelecionadaAtualmente = null; // Ex: 1245;
+
+    // 1. Calcula o score de prioridade para cada tarefa e já separa por tipo.
+    const tarefasComScore = listaDeTarefas.map(tarefa => {
+      // Converte a data de conclusão para um número (timestamp em milissegundos) para poder somar.
+      const valorData = new Date(tarefa.dataConclusao).getTime();
+      
+      // A prioridade da tarefa (0-10) é somada.
+      // NOTA: O timestamp é um número muito grande. Para que a prioridade (0-10) tenha um impacto real,
+      // ela pode precisar ser multiplicada por um fator grande. Por exemplo, `tarefa.prioridade * 86400000`
+      // faria com que cada ponto de prioridade equivalesse a um dia.
+      // Por enquanto, somamos diretamente para manter a simplicidade da lógica inicial.
+      const score = valorData + tarefa.prioridade;
+
+      return {
+        ...tarefa, // Mantém os dados originais da tarefa
+        score: score // Adiciona o score calculado
+      };
+    }); // fim do .map()
+
+    // 2. Separa as tarefas em duas listas e ordena cada uma pelo score.
+    const tarefasNovas = tarefasComScore
+      .filter(t => t.tipo === 'nova')
+      .sort((a, b) => a.score - b.score);
+
+    const tarefasSistema = tarefasComScore
+      .filter(t => t.tipo === 'sistema')
+      .sort((a, b) => a.score - b.score);
+
+    // 3. Monta a lista final intercalando as tarefas.
+    const listaFinalOrdenada = [];
+    const tamanhoMaximo = Math.max(tarefasNovas.length, tarefasSistema.length);
+
+    for (let i = 0; i < tamanhoMaximo; i++) {
+      // Adiciona uma tarefa "nova", se houver.
+      if (tarefasNovas[i]) {
+        listaFinalOrdenada.push(tarefasNovas[i]);
+      } // fim do if
+      // Adiciona uma tarefa do "sistema", se houver.
+      if (tarefasSistema[i]) {
+        listaFinalOrdenada.push(tarefasSistema[i]);
+      } // fim do if
+    } // fim do for
+
+    // 4. Encontra a próxima tarefa a ser selecionada a partir da lista final.
+    let proximaTarefa = listaFinalOrdenada[0]; // Por padrão, é a primeira da lista.
+
+    // 5. Verifica se a tarefa mais urgente já é a que está selecionada.
+    if (proximaTarefa && proximaTarefa.id === idTarefaSelecionadaAtualmente) {
+      // Se a tarefa mais urgente já estiver selecionada e houver uma segunda tarefa na lista...
+      if (listaFinalOrdenada.length > 1) {
+        // ...pula para a segunda tarefa mais urgente.
+        proximaTarefa = listaFinalOrdenada[1];
+      } // fim do if (listaFinalOrdenada.length > 1)
+    } // fim do if (proximaTarefa.id === idTarefaSelecionadaAtualmente)
+
+    // 6. Executa a ação de "abrir" ou "destacar" a próxima tarefa.
+    if (proximaTarefa) {
+      // alert(`A próxima tarefa é: #${proximaTarefa.id} - ${proximaTarefa.titulo}`);
+      // Em vez de um alerta, agora vamos preencher o accordion "Tarefa Selecionada".
+      abrirDetalheTarefa(proximaTarefa);
+    } else {
+      alert("Parabéns, você não tem tarefas pendentes!");
+    } // fim do if (proximaTarefa)
+  }; // fim da função selecionarProximaTarefa
+
+  /**
+   * Preenche o accordion "Tarefa Selecionada" com os detalhes da tarefa.
+   * @param {object} tarefa - O objeto da tarefa a ser exibida.
+   */
+  const abrirDetalheTarefa = (tarefa) => {
+    // Encontra o accordion da tarefa selecionada e seu conteúdo.
+    const accordionGroup = document.querySelector('details.accordion-group[open]');
+    if (!accordionGroup || !accordionGroup.querySelector('summary').textContent.includes('Tarefa Selecionada')) {
+      console.error('Accordion "Tarefa Selecionada" não encontrado ou não está aberto.');
+      return;
+    } // fim do if
+
+    const accordionContent = accordionGroup.querySelector('.accordion-content');
+    
+    // Monta o HTML com os detalhes da tarefa.
+    // Esta é uma estrutura básica que pode ser expandida no futuro.
+    accordionContent.innerHTML = `
+      <h3>#${tarefa.id} - ${tarefa.titulo}</h3>
+      <p><strong>Prioridade:</strong> ${tarefa.prioridade}</p>
+      <p><strong>Data de Conclusão:</strong> ${new Date(tarefa.dataConclusao).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
+      <p><em>(Aqui entrarão mais detalhes, histórico e ações da tarefa...)</em></p>
+    `;
+  }; // fim da função abrirDetalheTarefa
 
   navButtons.forEach(button => {
     button.addEventListener('click', () => {

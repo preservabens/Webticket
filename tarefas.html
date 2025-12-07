@@ -1,85 +1,163 @@
-<div class="page-container">
-  <div class="page-main-content">
-    <div class="page-header">
-      <div class="page-title-group">
-        <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
-        <h2>Tarefas</h2>
-      </div>
-      <button type="button" class="page-header-btn" id="new-task-btn">Nova Tarefa</button>
-      <button id="task-sidebar-toggle" class="page-header-btn">☰</button>      
-    </div>
-    <p>Selecione uma tarefa da lista para ver os detalhes.</p>
-    <br>
-    <div class="accordion-container">
-      <!-- Acordion de Busca -->
-      <details class="accordion-group">
-        <summary class="accordion-title">Busca</summary>
-        <div class="accordion-content">
-          <div class="search-controls">
-            <input type="text" class="form-input" placeholder="Buscar por nome, CPF, endereço...">
-            <select class="form-input">
-              <option value="pessoa">Pessoa</option>
-              <option value="imovel">Imóvel</option>
-            </select>
-          </div>
-
-          <h4>Resultados da Busca</h4>
-          <div class="table-container" style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
-            <table class="point-table">
-              <thead>
-                <tr>
-                  <th>Nome / Endereço</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Resultados da busca por pessoa/imóvel aparecerão aqui -->
-              </tbody>
-            </table>
-          </div>
-
-          <h4 style="margin-top: 20px;">Chamados Relacionados</h4>
-          <div class="table-container" style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
-            <table class="point-table">
-              <!-- Cabeçalho da tabela de chamados -->
-              <tbody><!-- Chamados relacionados ao item selecionado acima aparecerão aqui --></tbody>
-            </table>
-          </div>
-        </div>
-      </details>
-
-      <!-- O primeiro accordion conterá a lista de tarefas, carregada dinamicamente. -->
-      <details class="accordion-group" open>
-        <summary class="accordion-title">Lista de Tarefas</summary>
-        <div class="accordion-content">
-          <!-- Este botão não seleciona a próxima tarefa da lista e sim a próxima tarefa a ser executada. A lógica seleciona as tarefas por data e acrescenta a prioridade (0-10, 0=urgente), mostrando primeiro a que tiver o menor número. Ao clicar, se a tarefa selecionada não for a de menor número, ele a seleciona. Se já for, ele seleciona a segunda de menor número. -->
-          <button type="button" class="tile" style="width: 100%; height: 60px; margin-bottom: 20px;">Próxima Tarefa</button>
-
-          <p>Abaixo será exibida a lista de tarefas. Clicar em uma tarefa preencherá o accordion "Tarefa Selecionada".</p>
-          <br>
-          <!-- Exemplo de item de lista -->
-          <ul>
-            <li><a href="#">Tarefa 1: Revisar Contrato de Venda</a></li>
-            <li><a href="#">Tarefa 2: Ligar para Cliente X</a></li>
-          </ul>
-        </div>
-      </details>
-
-      <!-- O segundo accordion será preenchido com os detalhes da tarefa selecionada no primeiro. -->
-      <details class="accordion-group">
-        <summary class="accordion-title">Tarefa Selecionada</summary>
-        <div class="accordion-content">
-          <p>Os detalhes, anexos e comentários da tarefa selecionada aparecerão aqui.</p>
-        </div>
-      </details>
-    </div>
+<div class="page-header">
+  <div class="page-title-group">
+    <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
+    <h2>Tarefas</h2>
   </div>
+</div>
 
-  <aside id="task-sidebar">
-    <button type="button" class="nav-btn">
-      <span class="button-text">Home</span>
-    </button>
-    <button type="button" class="nav-btn">
-      <span class="button-text">Lista de Tarefas</span>
-    </button>
-  </aside>
+<div class="accordion-container">
+  <!-- Grupo de Busca e Resultados -->
+  <details class="accordion-group">
+    <summary class="accordion-title">Busca</summary>
+    <div class="accordion-content">
+      <p>Busque por pessoas, imóveis ou contratos para visualizar ou criar tarefas relacionadas.</p>
+      <br>
+
+      <!-- Controles de Busca -->
+      <div class="search-controls">
+        <input type="text" class="form-input" placeholder="Digite para buscar..." />
+        <button type="button" class="page-header-btn">Buscar</button>
+      </div>
+
+      <br>
+      <h4>Resultados da Busca</h4>
+      <!-- Ao clicar em "Buscar", esta tabela será preenchida com os resultados. -->
+      <div class="table-container">
+        <table class="point-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Endereço</th>
+              <th>Tipo</th>
+              <th>Relação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fulano de Tal</td>
+              <td>Rua Xxxxx</td>
+              <td>Imóvel</td>
+              <td>Cliente</td>
+            </tr>
+            <tr>
+              <td>Ciclano de Tal</td>
+              <td>Rua yyyyy</td>
+              <td>Pessoa Física</td>
+              <td>Não Cliente</td>
+            </tr>
+            <tr>
+              <td>Beltrano de Tal</td>
+              <td>Rua zzzzzz</td>
+              <td>Pessoa Jurídica</td>
+              <td>Fornecedor</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <br>
+
+      <h4>Chamados Relacionados</h4>
+      <!-- 
+        Ao selecionar um item na tabela de "Resultados da Busca", 
+        esta segunda tabela será preenchida com as tarefas/chamados relacionados.
+      -->
+      <div class="table-container">
+        <table class="point-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Tipo</th>
+              <th>Título</th>
+              <th>Relacionado Principal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1245</td>
+              <td>Manutenção</td>
+              <td>Vazamento de Gás</td>
+              <td>Condomínio Mormar</td>
+            </tr>
+            <tr>
+              <td>1472</td>
+              <td>Boletos</td>
+              <td>Taxa a maior lançada</td>
+              <td>Condomínio Mormar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <br>
+
+      <!-- 
+        Ao selecionar um chamado na tabela "Chamados Relacionados",
+        o campo de texto abaixo será preenchido com um resumo do chamado.
+      -->
+      <div class="memo-container">
+        <div class="memo-header">
+          <button class="page-header-btn">Trabalhar com esse chamado</button>
+          <h4>Resumo do Chamado</h4>
+        </div>
+        <textarea class="form-input memo-area" readonly>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam. Proin sed enim sed lorem consectetuer egestas. Suspendisse egestas, neque sed commodo commodo, magna nisl posuere mi, eu justo sem quis justo. Vivamus consectetuer, dolor nec pulvinar aliquam, lorem eros consectetuer elit, vitae lacinia tellus nulla quis odio. Curabitur vel urna. Ut vitae nisl. Nam et arcu. In hac habitasse platea dictumst. Sed aliquam, nunc eget euismod ullamcorper, lectus nunc ullamcorper orci, fermentum bibendum enim nibh eget ipsum. Donec porttitor ligula eu dolor. Maecenas vitae sem. Nam scelerisque, quam eu pulvinar conubia nostra.</textarea>
+      </div>
+    </div>
+  </details>
+
+  <!-- Grupo Lista de Tarefas -->
+  <details class="accordion-group">
+    <summary class="accordion-title">Lista de Tarefas</summary>
+    <div class="accordion-content">
+      <!-- 
+        Botão "Próxima Tarefa".
+        Ao ser clicado, aciona a função 'selecionarProximaTarefa()' em main.js.
+        Esta função organiza as tarefas de forma intercalada: uma "nova" (de cliente)
+        e uma do "sistema" (interna), sempre priorizando a mais urgente de cada tipo
+        (baseado na data e prioridade 0-10). Isso garante que novas demandas sejam
+        atendidas rapidamente sem parar o fluxo de trabalho interno.
+      -->
+      <button type="button" id="btn-proxima-tarefa" class="page-header-btn">Próxima tarefa</button>
+      <br><br>
+      <p>Abaixo será exibida a lista de tarefas. Clicar em uma tarefa preencherá o acordion "tarefa selecionada"</p>
+      <div class="table-container">
+        <table class="point-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>TIPO</th>
+              <th>Título da Tarefa</th>
+              <th>Relação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1245</td>
+              <td>Manutenção</td>
+              <td>Vazamento de Gás</td>
+              <td>Condomínio Mormar</td>
+            </tr>
+            <tr>
+              <td>1472</td>
+              <td>Boletos</td>
+              <td>Taxa Maior Lançada</td>
+              <td>Condomínio Mormar</td>
+            </tr>
+            <tr>
+              <td>1466</td>
+              <td>Nova Locação</td>
+              <td>Rio das Pedras 301</td>
+              <td>Maria das Graças</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <!-- Grupo Tarefa Selecionada -->
+  <details class="accordion-group" open>
+    <summary class="accordion-title">Tarefa Selecionada</summary>
+    <div class="accordion-content">
+      <p>Selecione uma tarefa na lista acima para ver os detalhes aqui.</p>
+    </div>
+  </details>
 </div>
