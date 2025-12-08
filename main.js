@@ -89,6 +89,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
+
+      // --- CORREÇÃO PARA BUG DE SCROLL EM MOBILE (ANDROID/CHROME) ---
+      // Força o navegador a recalcular o layout e a área rolável.
+      // Alguns navegadores móveis não atualizam a capacidade de rolagem quando o
+      // conteúdo de um accordion é alterado. "Piscar" a propriedade display
+      // força um "reflow", resolvendo o problema da rolagem travada.
+      contentTarget.style.display = 'block';
+      // A propriedade é retornada para 'flex' imediatamente. A mudança é imperceptível.
+      contentTarget.style.display = ''; // Reseta para o valor padrão do CSS
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
