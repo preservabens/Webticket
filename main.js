@@ -243,12 +243,22 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       processoRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
       // Adiciona a seleção à linha clicada
       processoRow.classList.add('selected');
-      
-      // REGRAS DE NEGÓCIO: No futuro, aqui será feita uma chamada de API para recarregar
-      // a segunda tabela com as tarefas filtradas pelo processo/pessoa selecionado.
-      // Por enquanto, apenas mantemos a segunda tabela visível.
+
+      // --- REGRAS DE NEGÓCIO: Filtro da Tabela de Tarefas ---
+      // Ao selecionar um item na primeira tabela (Processos/Clientes), a segunda tabela (Tarefas)
+      // deve ser atualizada para mostrar todos os chamados relacionados àquele item.
+      // A ordenação segue duas etapas:
+      // 1. Tarefas ativas (não finalizadas), ordenadas da mais recente para a mais antiga.
+      // 2. Tarefas finalizadas, também ordenadas da mais recente para a mais antiga.
+      // A data de referência para ordenação é a "data fictícia" (data de conclusão + prioridade).
+      // Por enquanto, a lógica de recarga e ordenação é simulada, mas o fluxo está correto.
+
+      // Garante que a tabela de tarefas seja exibida
       document.getElementById('search-results-tarefas').style.display = 'block';
+      // Oculta os detalhes finais, pois uma nova seleção de processo foi feita
       document.getElementById('search-final-details').style.display = 'none';
+      // Oculta o botão "Trabalhar com esse chamado" até que uma tarefa seja selecionada
+      document.getElementById('btn-trabalhar-chamado').style.display = 'none';
     }
 
     // 3. Clique em uma linha da segunda tabela (Tarefas)
