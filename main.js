@@ -63,10 +63,20 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
    * Isso corrige o bug onde a rolagem trava após o conteúdo da página mudar de altura dinamicamente.
    */
   const forceScrollRecalculation = () => {
-    if (!contentTarget) return;
-    contentTarget.style.overflowY = 'hidden';
+    if (!contentTarget) return; // Sai se o alvo não existir.
+
+    // 1. Salva a posição atual da rolagem.
+    const currentScrollTop = contentTarget.scrollTop;
+
+    // 2. Força a rolagem para o final do conteúdo. Este é o passo que "acorda" o navegador.
+    contentTarget.scrollTop = contentTarget.scrollHeight;
+
+    // 3. Usa requestAnimationFrame para garantir que a próxima ação ocorra no próximo ciclo de renderização.
+    // Isso dá tempo para o navegador processar a rolagem para o final antes de voltarmos.
     requestAnimationFrame(() => {
-      contentTarget.style.overflowY = 'auto';
+      // 4. Restaura a posição original da rolagem de forma instantânea.
+      // O usuário não perceberá essa "ida e volta".
+      contentTarget.scrollTop = currentScrollTop;
     });
   };
 
