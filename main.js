@@ -258,13 +258,14 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
-    const processoRow = event.target.closest('#search-results-processos .selectable-row');
-    if (processoRow) {
+    const processoLink = event.target.closest('#search-results-processos .table-link');
+    if (processoLink) {
+      event.preventDefault(); // Impede que o link '#' navegue
+      const processoRow = processoLink.closest('tr');
       // Remove a seleção de outras linhas na mesma tabela
       processoRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
       // Adiciona a seleção à linha clicada
       processoRow.classList.add('selected');
-
       // --- REGRAS DE NEGÓCIO: Filtro da Tabela de Tarefas ---
       // Ao selecionar um item na primeira tabela (Processos/Clientes), a segunda tabela (Tarefas)
       // deve ser atualizada para mostrar todos os chamados relacionados àquele item.
@@ -283,14 +284,16 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
 
     // 3. Clique em uma linha da segunda tabela (Tarefas)
-    const tarefaRow = event.target.closest('#search-results-tarefas .selectable-row');
-    if (tarefaRow) {
+    const tarefaLinkBusca = event.target.closest('#search-results-tarefas .table-link');
+    if (tarefaLinkBusca) {
+      event.preventDefault(); // Impede que o link '#' navegue
+      const tarefaRow = tarefaLinkBusca.closest('tr');
       // Remove a seleção de outras linhas na mesma tabela
       tarefaRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
       // Adiciona a seleção à linha clicada
       tarefaRow.classList.add('selected');
       // Mostra a etapa final
-      const taskId = tarefaRow.dataset.taskId;
+      const taskId = tarefaLinkBusca.dataset.taskId;
 
       // Simula a busca da tarefa pelo ID
       const tarefaEncontrada = {
@@ -564,8 +567,8 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
           const dataHtml = isAtrasada ? `<span class="text-danger">${t.dataConclusao}</span>` : t.dataConclusao;
 
           return `
-            <tr class="selectable-row" data-task-id="${t.id}">
-              <td>${t.id}</td>
+            <tr data-task-id="${t.id}">
+              <td><a href="#" class="table-link" data-task-id="${t.id}">${t.id}</a></td>
               <td>${t.prioridade}</td>
               <td>${dataHtml}</td>
               <td>${t.tipo}</td>
@@ -586,13 +589,16 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       }
 
       // Adiciona um listener para os cliques nos itens da lista de tarefas
-      tableBody.querySelectorAll('.selectable-row').forEach(item => {
-        item.addEventListener('click', () => {
-          const taskId = item.dataset.taskId;
+      // Usando delegação de eventos para capturar cliques nos links
+      tableBody.addEventListener('click', (event) => {
+        const link = event.target.closest('.table-link');
+        if (link) {
+          event.preventDefault();
+          const taskId = link.dataset.taskId;
           // Simula a busca da tarefa pelo ID para abrir nos detalhes
-          const tarefaSelecionada = { id: taskId, titulo: `Tarefa #${taskId}`, tipo: 'sistema', dataConclusao: '2025-12-31', prioridade: 5 }; // Dados simplificados
+          const tarefaSelecionada = tarefas.find(t => t.id.toString() === taskId) || { id: taskId, titulo: `Tarefa #${taskId}`, tipo: 'sistema', dataConclusao: '2025-12-31', prioridade: 5 };
           abrirDetalheTarefa(tarefaSelecionada);
-        });
+        }
       });
     } // fim do if (listaTarefasAccordion)
 
