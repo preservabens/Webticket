@@ -63,10 +63,6 @@ h1 {
   /* --- CORREÇÃO PARA SCROLL EM MOBILE --- */
   /* Força a rolagem com "momentum" (inércia) em dispositivos touch, resolvendo bugs de scroll travado no Android/iOS. */
   -webkit-overflow-scrolling: touch;
-  /* --- CORREÇÃO DEFINITIVA PARA SCROLL EM MOBILE (CHROME/ANDROID) --- */
-  /* Informa ao navegador para otimizar a rolagem deste elemento, movendo-o para sua própria camada de composição.
-     Isso previne o bug de renderização que causa o travamento da rolagem após conteúdo dinâmico (tabelas) aparecer. */
-  will-change: scroll-position;
 }
 
 .nav-btn {
@@ -287,7 +283,7 @@ h1 {
   /* width: 100%; -- REMOVIDO: Esta propriedade causa o encolhimento da tabela em mobile. */
   /* min-width: 800px; -- ADICIONADO: Força a tabela a ter uma largura mínima, ativando o scroll horizontal
      no container e impedindo que as colunas sejam espremidas no Android. */
-  min-width: 800px;
+  min-width: 700px; /* Reduzido para a tabela não ficar excessivamente larga */
   border-collapse: collapse;
   margin-top: 10px;
   /* 5. Força o navegador a usar um algoritmo de renderização rápido.
@@ -320,12 +316,12 @@ h1 {
 .col-obs { min-width: 200px; }
 
 /* Novas classes para as tabelas de tarefas */
-.col-nome { min-width: 200px; }
-.col-endereco { min-width: 300px; }
+.col-nome { min-width: 150px; }
+.col-endereco { min-width: 250px; }
 .col-tipo { min-width: 120px; }
-.col-relacao { min-width: 180px; }
+.col-relacao { min-width: 150px; }
 .col-codigo { min-width: 100px; }
-.col-titulo { min-width: 300px; }
+.col-titulo { min-width: 250px; }
 .col-prioridade-icon {
   min-width: 60px;
   font-size: 24px; /* Aumenta o tamanho do ícone */

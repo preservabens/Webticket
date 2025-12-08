@@ -89,18 +89,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
-
-      // --- CORREÇÃO PARA BUG DE SCROLL EM MOBILE (ANDROID/CHROME) ---
-      // Força o navegador a recalcular a área rolável. Abordagens anteriores
-      // não foram suficientes. Esta nova estratégia desabilita e reabilita
-      // a rolagem no contêiner, forçando um recálculo mais robusto que
-      // resolve o bug da rolagem "congelada" em um único gesto.
-      contentTarget.style.overflowY = 'hidden';
-      // Usamos um setTimeout de 0ms para garantir que a reabilitação da rolagem
-      // ocorra no próximo ciclo de eventos da renderização do navegador.
-      setTimeout(() => {
-        contentTarget.style.overflowY = 'auto';
-      }, 0);
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
@@ -246,15 +234,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       document.getElementById('search-results-processos').style.display = 'block';
       document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
-
-      // --- CORREÇÃO PARA BUG DE SCROLL EM MOBILE (ANDROID/CHROME) ---
-      // Aplica a mesma correção do accordion aqui. Quando os resultados da busca
-      // aparecem, o conteúdo da página muda, e precisamos forçar o navegador
-      // a recalcular a área rolável para evitar o bug da rolagem travada.
-      contentTarget.style.overflowY = 'hidden';
-      setTimeout(() => {
-        contentTarget.style.overflowY = 'auto';
-      }, 0);
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
