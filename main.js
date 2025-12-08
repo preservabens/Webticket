@@ -89,6 +89,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
+
+      // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
+      // Aplica a mesma técnica da busca. Quando um accordion abre ou fecha,
+      // a altura do conteúdo muda, e precisamos forçar o navegador
+      // a recalcular a área rolável para evitar o bug da rolagem travada.
+      contentTarget.style.overflowY = 'hidden';
+      setTimeout(() => {
+        contentTarget.style.overflowY = 'auto';
+      }, 0);
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
