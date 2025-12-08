@@ -283,7 +283,10 @@ h1 {
 }
 
 .point-table {
-  width: 100%;
+  /* width: 100%; -- REMOVIDO: Esta propriedade causa o encolhimento da tabela em mobile. */
+  /* min-width: 800px; -- ADICIONADO: Força a tabela a ter uma largura mínima, ativando o scroll horizontal
+     no container e impedindo que as colunas sejam espremidas no Android. */
+  min-width: 800px;
   border-collapse: collapse;
   margin-top: 10px;
   /* 5. Força o navegador a usar um algoritmo de renderização rápido.
