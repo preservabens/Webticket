@@ -272,12 +272,12 @@ h1 {
   overflow-x: auto;
 
   /* --- CORREÇÃO DEFINITIVA PARA SCROLL EM MOBILE (BASEADO EM ANÁLISE TÉCNICA) --- */
-  /* 1. Desativa a "âncora de rolagem" do navegador, que causa o travamento ao injetar conteúdo. */
+  /* 1. Desativa a "âncora de rolagem" do navegador, que pode causar o travamento ao injetar conteúdo dinâmico. */
   overflow-anchor: none;
   /* 2. Garante que gestos verticais sejam sempre para rolagem da página, evitando conflito com a rolagem horizontal da tabela. */
   touch-action: pan-y; 
   /* 3. Promove este contêiner para sua própria camada de composição (GPU), garantindo rolagem fluida e desacoplada. */
-  will-change: transform;
+  will-change: scroll-position;
   /* 4. Garante a rolagem com inércia ("momentum") no iOS. */
   -webkit-overflow-scrolling: touch;
 }
@@ -286,7 +286,9 @@ h1 {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  /* 5. Força o navegador a usar um algoritmo de renderização rápido, que não depende de ler todo o conteúdo da tabela. */
+  /* 5. Força o navegador a usar um algoritmo de renderização rápido.
+     Isso é crucial para o desempenho e para evitar bugs de renderização, pois o layout
+     das colunas é calculado com base nos cabeçalhos e nas larguras definidas, não no conteúdo inteiro. */
   table-layout: fixed;
 }
 
@@ -306,29 +308,23 @@ h1 {
   font-size: 14px;
 }
 
-/* --- Estilos para Largura das Colunas da Tabela de Ponto --- */
-.point-table {  
-  width: 100%;
-}
+/* --- Estilos para Largura Mínima das Colunas das Tabelas --- */
+.col-action { min-width: 60px; }
+.col-date, .col-data { min-width: 110px; }
+.col-time { min-width: 90px; }
+.col-ho { min-width: 90px; }
+.col-obs { min-width: 200px; }
 
-.point-table .col-action {
+/* Novas classes para as tabelas de tarefas */
+.col-nome { min-width: 200px; }
+.col-endereco { min-width: 300px; }
+.col-tipo { min-width: 120px; }
+.col-relacao { min-width: 180px; }
+.col-codigo { min-width: 100px; }
+.col-titulo { min-width: 300px; }
+.col-prioridade-icon {
   min-width: 60px;
-}
-
-.point-table .col-date {
-  min-width: 110px;
-}
-
-.point-table .col-time {
-  min-width: 90px;
-}
-
-.point-table .col-ho {
-  min-width: 90px;
-}
-
-.point-table .col-obs {
-  min-width: 200px; /* Garante um espaço mínimo para observações */
+  font-size: 24px; /* Aumenta o tamanho do ícone */
 }
 
 .point-table .ho-sim {
