@@ -246,6 +246,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       document.getElementById('search-results-processos').style.display = 'block';
       document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
+
+      // --- CORREÇÃO PARA BUG DE SCROLL EM MOBILE (ANDROID/CHROME) ---
+      // Aplica a mesma correção do accordion aqui. Quando os resultados da busca
+      // aparecem, o conteúdo da página muda, e precisamos forçar o navegador
+      // a recalcular a área rolável para evitar o bug da rolagem travada.
+      contentTarget.style.overflowY = 'hidden';
+      setTimeout(() => {
+        contentTarget.style.overflowY = 'auto';
+      }, 0);
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
