@@ -57,6 +57,9 @@ h1 {
   padding: 20px;
   flex-grow: 1;
   overflow-y: auto;
+  /* --- CORREÇÃO PARA SCROLL EM MOBILE --- */
+  /* Força a rolagem com "momentum" (inércia) em dispositivos touch, resolvendo bugs de scroll travado no Android/iOS. */
+  -webkit-overflow-scrolling: touch;
 }
 
 .nav-btn {
