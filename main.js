@@ -58,6 +58,18 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
   };
 
+  /**
+   * Força o navegador (especialmente no Android) a recalcular a área rolável.
+   * Isso corrige o bug onde a rolagem trava após o conteúdo da página mudar de altura dinamicamente.
+   */
+  const forceScrollRecalculation = () => {
+    if (!contentTarget) return;
+    contentTarget.style.overflowY = 'hidden';
+    requestAnimationFrame(() => {
+      contentTarget.style.overflowY = 'auto';
+    });
+  };
+
   // Adiciona o evento de clique para o botão principal de toggle da sidebar
   if (sidebarToggleBtn) {
     sidebarToggleBtn.addEventListener('click', handleMenuToggle);
@@ -93,11 +105,14 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
       // Aplica a mesma técnica da busca. Quando um accordion abre ou fecha,
       // a altura do conteúdo muda, e precisamos forçar o navegador
-      // a recalcular a área rolável para evitar o bug da rolagem travada.
+      // a recalcular a área rolável. Usamos requestAnimationFrame para garantir
+      // que a correção seja aplicada após o navegador ter renderizado a mudança.
       contentTarget.style.overflowY = 'hidden';
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         contentTarget.style.overflowY = 'auto';
       }, 0);
+      // Força o recálculo da rolagem para corrigir o bug no Android.
+      forceScrollRecalculation();
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
@@ -246,12 +261,14 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
       // Quando as tabelas de busca são exibidas (mudando de display:none para display:block),
-      // o navegador pode travar a rolagem. Esta técnica força um recálculo da área rolável.
-      // Desabilitamos a rolagem e a reabilitamos no próximo ciclo de renderização (com setTimeout de 0ms).
+      // o navegador pode travar a rolagem. Esta técnica força um recálculo da área rolável
+      // usando requestAnimationFrame para garantir que a correção rode após a tabela ser desenhada.
       contentTarget.style.overflowY = 'hidden';
-      setTimeout(() => {
-        contentTarget.style.overflowY = 'auto';
-      }, 0);
+      requestAnimationFrame(() => {
+          contentTarget.style.overflowY = 'auto';
+      });
+      // Força o recálculo da rolagem para corrigir o bug no Android.
+      forceScrollRecalculation();
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
@@ -868,6 +885,9 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         </div>
       </div>
     `;
+
+    // Força o recálculo da rolagem após injetar todo o HTML da tarefa.
+    forceScrollRecalculation();
   }; // fim da função abrirDetalheTarefa
 
   const exibirDetalhesSubtarefa = (subtaskId) => {
@@ -965,6 +985,9 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
          <p class="placeholder-text">Selecione um documento acima para ver os detalhes.</p>
       </div>
     `;
+
+    // Força o recálculo da rolagem após exibir os detalhes da subtarefa.
+    forceScrollRecalculation();
   }
 
   /**
