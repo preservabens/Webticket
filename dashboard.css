@@ -270,15 +270,24 @@ h1 {
 /* Adiciona rolagem horizontal para a tabela em telas pequenas */
 .table-container {
   overflow-x: auto;
-  /* --- CORREÇÃO PARA SCROLL EM MOBILE (CHROME/ANDROID) --- */
-  /* Resolve o conflito entre a rolagem vertical da página e a horizontal da tabela, evitando que a rolagem "trave". */
-  touch-action: pan-y;
+
+  /* --- CORREÇÃO DEFINITIVA PARA SCROLL EM MOBILE (BASEADO EM ANÁLISE TÉCNICA) --- */
+  /* 1. Desativa a "âncora de rolagem" do navegador, que causa o travamento ao injetar conteúdo. */
+  overflow-anchor: none;
+  /* 2. Garante que gestos verticais sejam sempre para rolagem da página, evitando conflito com a rolagem horizontal da tabela. */
+  touch-action: pan-y; 
+  /* 3. Promove este contêiner para sua própria camada de composição (GPU), garantindo rolagem fluida e desacoplada. */
+  will-change: transform;
+  /* 4. Garante a rolagem com inércia ("momentum") no iOS. */
+  -webkit-overflow-scrolling: touch;
 }
 
 .point-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  /* 5. Força o navegador a usar um algoritmo de renderização rápido, que não depende de ler todo o conteúdo da tabela. */
+  table-layout: fixed;
 }
 
 .point-table th,
@@ -298,8 +307,7 @@ h1 {
 }
 
 /* --- Estilos para Largura das Colunas da Tabela de Ponto --- */
-.point-table {
-  /* table-layout: fixed; /* Comentado para permitir que o min-width funcione melhor com conteúdo variável */
+.point-table {  
   width: 100%;
 }
 
