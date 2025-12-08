@@ -1127,7 +1127,29 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
   };
 
   // Adiciona o listener para o evento de redimensionamento
-  window.addEventListener('resize', handleResize);
+  // Usamos { passive: true } para indicar ao navegador que esses listeners não vão cancelar
+  // a ação padrão (como o scroll), permitindo que o navegador otimize a performance.
+  window.addEventListener('resize', handleResize, { passive: true });
+
+  // --- LÓGICA DO BOTÃO "VOLTAR AO TOPO" ---
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  if (backToTopBtn && contentTarget) {
+    // O evento de scroll é no contêiner do conteúdo, não na window.
+    contentTarget.addEventListener('scroll', () => {
+      // Mostra o botão se o usuário rolar mais de 300px para baixo.
+      if (contentTarget.scrollTop > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }, { passive: true }); // Otimização de performance
+
+    // Adiciona a ação de clique para rolar suavemente de volta ao topo.
+    backToTopBtn.addEventListener('click', () => {
+      contentTarget.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  // --- FIM DA LÓGICA DO BOTÃO "VOLTAR AO TOPO" ---
 
   // Executa a função uma vez no carregamento para definir o estado inicial correto
   handleResize();

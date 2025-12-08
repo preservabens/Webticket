@@ -63,6 +63,9 @@ h1 {
   /* --- CORREÇÃO PARA SCROLL EM MOBILE --- */
   /* Força a rolagem com "momentum" (inércia) em dispositivos touch, resolvendo bugs de scroll travado no Android/iOS. */
   -webkit-overflow-scrolling: touch;
+  /* 1. Desativa a "âncora de rolagem" do navegador, que causa o travamento ao injetar conteúdo dinâmico.
+     Isso impede que o navegador tente "adivinhar" onde a rolagem deveria ficar, o que causa o bug. */
+  overflow-anchor: none;
 }
 
 .nav-btn {
@@ -190,6 +193,9 @@ h1 {
   /* Força a promoção do conteúdo para sua própria camada de composição,
      resolvendo bugs de cálculo de layout e rolagem ao abrir/fechar accordions. */
   transform: translateZ(0);
+  /* Adiciona uma otimização extra para navegadores que suportam will-change,
+     informando que a transformação (GPU) e o conteúdo podem mudar. */
+  will-change: transform, contents;
 }
 
 /* --- Estilos para Navegador de Mês e Tabela --- */
@@ -277,6 +283,9 @@ h1 {
   will-change: scroll-position;
   /* 4. Garante a rolagem com inércia ("momentum") no iOS. */
   -webkit-overflow-scrolling: touch;
+  /* 5. Otimização extra: Aplica o hack de aceleração por GPU para garantir que a rolagem horizontal
+     seja processada de forma independente, evitando conflito com a rolagem vertical da página. */
+  transform: translateZ(0);
 }
 
 .point-table {
