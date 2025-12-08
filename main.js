@@ -117,15 +117,35 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       } // fim do if (currentMode)
     } // fim do if (memo-edit-btn)
 
+    // Verifica se o clique foi no botão de editar o título da tarefa
+    if (event.target.id === 'edit-task-title-btn') {
+      // REGRAS DE NEGÓCIO: No futuro, este botão abrirá um modal para alterar o tipo e o título da tarefa.
+      // Por enquanto, exibe um alerta informativo.
+      alert('Este botão irá abrir uma janela para selecionar o tipo do chamado e alterar o nome.');
+    } // fim do if (edit-task-title-btn)
+
+    // Verifica se o clique foi em um cabeçalho de quadro colapsável (Subtarefas/Documentos)
+    const collapsibleHeader = event.target.closest('.task-quadro .quadro-header');
+    if (collapsibleHeader) {
+        // Impede que o clique nos botões dentro do header (ex: '+') dispare o colapso.
+        if (event.target.closest('.icon-btn')) {
+            return;
+        }
+        const quadro = collapsibleHeader.closest('.task-quadro');
+        if (quadro && (quadro.querySelector('#subtask-list') || quadro.querySelector('#document-list'))) {
+            quadro.classList.toggle('is-collapsed');
+        }
+    }
+
     // Verifica se o clique foi em uma subtarefa
     const subtaskItem = event.target.closest('.subtask-item');
     if (subtaskItem) {
       // Remove a seleção de outros itens
-      document.querySelectorAll('.subtask-item.selected, .document-item.selected').forEach(item => item.classList.remove('selected'));
+      document.querySelectorAll('.subtask-item.selected').forEach(item => item.classList.remove('selected'));
       // Adiciona a classe de seleção ao item clicado
       subtaskItem.classList.add('selected');
-      // Atualiza o quadro de checklist
-      atualizarQuadroChecklist(subtaskItem.dataset.subtaskId);
+      // Exibe os detalhes da subtarefa (checklist e documentos)
+      exibirDetalhesSubtarefa(subtaskItem.dataset.subtaskId);
     } // fim do if (subtaskItem)
 
     // Verifica se o clique foi em um item de documento
@@ -133,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     if (documentItem) {
       // Remove a seleção de outros itens
       document.querySelectorAll('.subtask-item.selected, .document-item.selected').forEach(item => item.classList.remove('selected'));
-      // Adiciona a classe de seleção ao item clicado
+      // Adiciona a classe de seleção ao item clicado (dentro do seu próprio quadro)
       documentItem.classList.add('selected');
       atualizarQuadroDocumento(documentItem.dataset.documentId);
     } // fim do if (documentItem)
@@ -145,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       if (dynamicQuadro) {
         // Oculta o quadro
         dynamicQuadro.style.display = 'none';
-        // Limpa o conteúdo e restaura o texto padrão
-        dynamicQuadro.innerHTML = '<p class="placeholder-text">Selecione uma subtarefa ou documento para ver os detalhes.</p>';
+        // Limpa o conteúdo
+        dynamicQuadro.innerHTML = '<p class="placeholder-text">Selecione uma subtarefa para ver seu checklist e documentos.</p>';
       } // fim do if (dynamicQuadro)
 
       // Remove a classe 'selected' de qualquer item de subtarefa ou documento
@@ -200,6 +220,67 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       abrirDetalheTarefa(tarefaParaCarregar);
     } // fim do if (btn-trabalhar-chamado)
 
+    // --- LÓGICA DA BUSCA EM ETAPAS ---
+    // 1. Clique no botão "Buscar"
+    if (event.target.id === 'btn-buscar') {
+      document.getElementById('search-results-processos').style.display = 'block';
+      document.getElementById('search-results-tarefas').style.display = 'none';
+      document.getElementById('search-final-details').style.display = 'none';
+    }
+
+    // 2. Clique em uma linha da primeira tabela (Processos)
+    const processoRow = event.target.closest('#search-results-processos .selectable-row');
+    if (processoRow) {
+      // Remove a seleção de outras linhas na mesma tabela
+      processoRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
+      // Adiciona a seleção à linha clicada
+      processoRow.classList.add('selected');
+      // Mostra a próxima etapa
+      document.getElementById('search-results-tarefas').style.display = 'block';
+      document.getElementById('search-final-details').style.display = 'none';
+    }
+
+    // 3. Clique em uma linha da segunda tabela (Tarefas)
+    const tarefaRow = event.target.closest('#search-results-tarefas .selectable-row');
+    if (tarefaRow) {
+      // Remove a seleção de outras linhas na mesma tabela
+      tarefaRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
+      // Adiciona a seleção à linha clicada
+      tarefaRow.classList.add('selected');
+      // Mostra a etapa final
+      const taskId = tarefaRow.dataset.taskId;
+
+      // Simula a busca da tarefa pelo ID
+      const tarefaEncontrada = {
+        id: taskId,
+        titulo: 'Chamado Carregado da Busca',
+        dataConclusao: '2025-12-25',
+        prioridade: 5,
+        tipo: 'sistema'
+      };
+
+      // Popula os detalhes da tarefa na área de busca
+      const finalDetails = document.getElementById('search-final-details');
+      finalDetails.innerHTML = `
+        <h5>3. Detalhes da Tarefa #${tarefaEncontrada.id}</h5>
+        <p>
+          <strong>Tipo:</strong> ${tarefaEncontrada.tipo} <br>
+          <strong>Título:</strong> ${tarefaEncontrada.titulo} <br>
+          <strong>Conclusão:</strong> ${tarefaEncontrada.dataConclusao} <br>
+          <strong>Prioridade:</strong> ${tarefaEncontrada.prioridade}
+        </p>
+        <p><strong>Resumo:</strong> Cliente João da Silva, contrato iniciado em 01/12/2025. Documentação pendente: comprovante de renda.</p>
+        <p><strong>Movimentos:</strong> Nenhum movimento registrado.</p>
+        <p><strong>Subtarefas:</strong> Nenhuma subtarefa associada.</p>
+        <p><strong>Documentos:</strong> Nenhum documento associado.</p>
+        <p><strong>Log:</strong> Nenhuma entrada de log.</p>
+      `;
+      document.getElementById('search-final-details').style.display = 'block';
+      document.getElementById('btn-trabalhar-chamado').style.display = 'inline-block';
+    }
+    // --- FIM DA LÓGICA DA BUSCA ---
+
+
     // Verifica se o clique foi no botão da sidebar de tarefas
     if (event.target.id === 'task-sidebar-toggle') {
       contentTarget.classList.toggle('task-sidebar-open');
@@ -243,6 +324,12 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       }
     }
 
+    // Verifica se o clique foi no botão "Próxima Tarefa" dentro do accordion
+    if (event.target.id === 'btn-proxima-tarefa-accordion') {
+      selecionarProximaTarefa();
+      return;
+    }
+
     // Verifica se o clique foi no botão "Próxima Tarefa"
     if (event.target.id === 'btn-proxima-tarefa') {
       selecionarProximaTarefa();
@@ -259,6 +346,22 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
   });
 
+  /**
+   * Controla a abertura e fechamento dos accordions de tarefas.
+   * @param {string} fromSelector - Seletor do data-section do accordion a ser fechado.
+   * @param {string} toSelector - Seletor do data-section do accordion a ser aberto.
+   */
+  const switchAccordionView = (fromSelector, toSelector) => {
+    const allAccordions = document.querySelectorAll('.accordion-container .accordion-group');
+    allAccordions.forEach(group => {
+      const section = group.querySelector('.accordion-title')?.dataset.section;
+      if (section === fromSelector) {
+        group.removeAttribute('open');
+      } else if (section === toSelector) {
+        group.setAttribute('open', '');
+      }
+    });
+  };
   // --- LÓGICA DE CARREGAMENTO DE PÁGINA ---
 
   const loadPage = async (page) => {
@@ -337,13 +440,119 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
   // Função para inicializar a página de tarefas
   const initializeTarefasPage = () => {
-    // Encontra o botão "Próxima tarefa"
-    const btnProxima = document.getElementById('btn-proxima-tarefa');
-    if (btnProxima) {
-      // Simula o clique no botão para carregar a tarefa mais importante
-      // assim que a página de tarefas é aberta.
-      btnProxima.click();
-    } // fim do if (btnProxima)
+    // --- REGRAS DE NEGÓCIO: Inicialização da Tela de Tarefas ---
+    // 1. Popula o accordion "Lista de Tarefas".
+    // 2. Executa a lógica de "Próxima Tarefa" para abrir a mais importante.
+
+    // Encontra o accordion da Lista de Tarefas
+    const allAccordions = document.querySelectorAll('.accordion-container .accordion-group');
+    let listaTarefasAccordion = null;
+    allAccordions.forEach(group => {
+      const title = group.querySelector('.accordion-title').textContent;
+      if (title.includes('Lista de Tarefas')) {
+        listaTarefasAccordion = group;
+      }
+    });
+
+    if (listaTarefasAccordion) {
+      const content = listaTarefasAccordion.querySelector('.accordion-content');
+      const tableBody = content.querySelector('tbody');
+
+      // --- REGRAS DE NEGÓCIO: Ordenação da Lista de Tarefas (Prioridade + Data) ---
+      // 1. Simulação de dados da lista de tarefas, incluindo prioridade e tarefas atrasadas.
+      let tarefas = [
+        // Adicionamos o campo 'hora' para tarefas com tempo definido.
+        { id: 1245, dataConclusao: '10/12/2025', prioridade: 1, tipo: 'Sistema', titulo: 'Vazamento de Gás', relacao: 'Inquilino - Apto 101' },
+        { id: 1472, dataConclusao: '15/12/2025', prioridade: 5, tipo: 'Nova', titulo: 'Taxa Maior Lançada', relacao: 'Cliente - Empresa X' },
+        { id: 1466, dataConclusao: '20/12/2025', prioridade: 3, tipo: 'Sistema', titulo: 'Nova Locação Rio das Pedras 301', relacao: 'Proprietário - Sr. José' },
+        { id: 1890, dataConclusao: '10/12/2025', prioridade: 8, tipo: 'Sistema', titulo: 'Verificar documentação', relacao: 'Inquilino - Apto 302' },
+        { id: 1950, dataConclusao: '09/12/2025', prioridade: 2, tipo: 'Nova', titulo: 'Email: Dúvida sobre reajuste', relacao: 'Cliente - Empresa Y' },
+        { id: 2001, dataConclusao: '06/12/2025', prioridade: 0, tipo: 'Sistema', titulo: 'Reparo Urgente Calha', relacao: 'Condomínio Z' }, // Atrasada
+        { id: 2002, dataConclusao: '05/12/2025', prioridade: 6, tipo: 'Nova', titulo: 'Cliente sem acesso ao sistema', relacao: 'Cliente - Empresa W' }, // Atrasada
+      ];
+
+      // 2. Ordena a lista.
+      // A ordenação se dá por uma "data fictícia" de prazo.
+      // Essa data é a data de conclusão original + o número de dias da prioridade.
+      // O critério de desempate é o código da tarefa.
+      tarefas.sort((a, b) => {
+        const calcularDataFicticia = (tarefa) => {
+          const [day, month, year] = tarefa.dataConclusao.split('/');
+          const data = new Date(`${year}-${month}-${day}`);
+          
+          // Se a tarefa não tem hora, assume-se 17:59.
+          if (tarefa.hora) {
+            const [h, m] = tarefa.hora.split(':');
+            data.setHours(h, m, 0, 0);
+          } else {
+            data.setHours(17, 59, 0, 0);
+          }
+          // Adiciona os dias da prioridade à data.
+          data.setDate(data.getDate() + tarefa.prioridade);
+          return data;
+        };
+        const dataFicticiaA = calcularDataFicticia(a);
+        const dataFicticiaB = calcularDataFicticia(b);
+
+        // Compara as datas fictícias. Se forem iguais, desempata pelo código.
+        if (dataFicticiaA.getTime() !== dataFicticiaB.getTime()) {
+          return dataFicticiaA - dataFicticiaB;
+        } else {
+          return a.id - b.id;
+        }
+      });
+
+      if (tableBody) {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0); // Zera a hora para comparar apenas a data
+
+        // Popula a tabela com os dados
+        tableBody.innerHTML = tarefas.map(t => {
+          const [day, month, year] = t.dataConclusao.split('/');
+          const dataTarefa = new Date(`${year}-${month}-${day}`);
+          const isAtrasada = dataTarefa < hoje;
+
+          // 3. A data da tarefa fica vermelha se estiver atrasada.
+          const dataHtml = isAtrasada ? `<span class="text-danger">${t.dataConclusao}</span>` : t.dataConclusao;
+
+          return `
+            <tr class="selectable-row" data-task-id="${t.id}">
+              <td>${t.id}</td>
+              <td>${t.prioridade}</td>
+              <td>${dataHtml}</td>
+              <td>${t.tipo}</td>
+              <td>${t.titulo}</td>
+              <td>${t.relacao}</td>
+            </tr>
+          `;
+        }).join('');
+      } // fim do if(tableBody)
+
+      // --- REGRAS DE NEGÓCIO: Comentário do botão "Próxima Tarefa" ---
+      // A lógica deste botão é complexa: ele ordena as tarefas com base em um score
+      // (data de conclusão + prioridade) e intercala tarefas "Novas" (de clientes)
+      // com tarefas do "Sistema" (internas) para garantir um fluxo de trabalho balanceado.
+      const proximaTarefaBtn = content.querySelector('#btn-proxima-tarefa-accordion');
+      if (proximaTarefaBtn) {
+        proximaTarefaBtn.title = "Ordena as tarefas por urgência (data + prioridade), intercalando tarefas novas e do sistema, e seleciona a mais importante.";
+      }
+
+      // Adiciona um listener para os cliques nos itens da lista de tarefas
+      tableBody.querySelectorAll('.selectable-row').forEach(item => {
+        item.addEventListener('click', () => {
+          const taskId = item.dataset.taskId;
+          // Simula a busca da tarefa pelo ID para abrir nos detalhes
+          const tarefaSelecionada = { id: taskId, titulo: `Tarefa #${taskId}`, tipo: 'sistema', dataConclusao: '2025-12-31', prioridade: 5 }; // Dados simplificados
+          abrirDetalheTarefa(tarefaSelecionada);
+        });
+      });
+    } // fim do if (listaTarefasAccordion)
+
+
+    // Por fim, chama a função para selecionar a próxima tarefa
+    // Usamos um setTimeout para garantir que a interface tenha tempo de renderizar
+    // antes de simularmos o clique ou a chamada da função.
+    setTimeout(selecionarProximaTarefa, 100);
   }; // fim da função initializeTarefasPage
 
   /**
@@ -429,6 +638,9 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
     // 6. Executa a ação de "abrir" ou "destacar" a próxima tarefa.
     if (proximaTarefa) {
+      // --- REGRAS DE NEGÓCIO: Manipulação dos Accordions ---
+      // Fecha o accordion da lista e abre o da tarefa selecionada.
+      switchAccordionView('lista-tarefas', 'tarefa-selecionada');
       // alert(`A próxima tarefa é: #${proximaTarefa.id} - ${proximaTarefa.titulo}`);
       // Em vez de um alerta, agora vamos preencher o accordion "Tarefa Selecionada".
       abrirDetalheTarefa(proximaTarefa);
@@ -442,15 +654,29 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
    * @param {object} tarefa - O objeto da tarefa a ser exibida.
    */
   const abrirDetalheTarefa = (tarefa) => {
-    // Encontra o accordion da tarefa selecionada e seu conteúdo.
-    const accordionGroup = document.querySelector('details.accordion-group[open]');
-    if (!accordionGroup || !accordionGroup.querySelector('summary').textContent.includes('Tarefa Selecionada')) {
-      console.error('Accordion "Tarefa Selecionada" não encontrado ou não está aberto.');
-      return;
-    } // fim do if
+    // Garante que o accordion da tarefa selecionada esteja aberto e o da lista fechado.
+    switchAccordionView('lista-tarefas', 'tarefa-selecionada');
 
-    const accordionContent = accordionGroup.querySelector('.accordion-content');
-    
+    // --- REGRAS DE NEGÓCIO: Atualização do Título do Accordion ---
+    // 1. Encontra o accordion da "Tarefa Selecionada" de forma segura.
+    const allAccordionGroups = document.querySelectorAll('.accordion-container .accordion-group');
+    let taskAccordionGroup = null;
+    allAccordionGroups.forEach(group => {
+      const summary = group.querySelector('.accordion-title');
+      // Usamos um atributo de dados para identificar o accordion de forma mais robusta.
+      if (summary && summary.dataset.section === 'tarefa-selecionada') {
+        taskAccordionGroup = group;
+      }
+    });
+
+    if (!taskAccordionGroup) return; // Sai se não encontrar o accordion
+
+    // 2. Atualiza o título com o tipo e nome da tarefa, e adiciona o botão de editar.
+    const taskAccordionTitle = taskAccordionGroup.querySelector('.accordion-title');
+    const tipoTarefaCapitalized = tarefa.tipo.charAt(0).toUpperCase() + tarefa.tipo.slice(1);
+    taskAccordionTitle.innerHTML = `${tipoTarefaCapitalized} - ${tarefa.titulo} <button id="edit-task-title-btn" class="table-action-btn" title="Alterar tipo/nome da tarefa">✏️</button>`;
+
+    const accordionContent = taskAccordionGroup.querySelector('.accordion-content');
     // Monta o HTML com os detalhes da tarefa.
     // Esta é uma estrutura básica que pode ser expandida no futuro.
 
@@ -468,24 +694,13 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       return a.id - b.id; // Mantém ordem de criação como desempate
     });
 
-    // Ordena documentos: Vencidos/próximos de vencer primeiro.
-    const documents = [
-      { id: 104, name: 'Renda 02', status: 'Vencido 35 dias', days: -35, type: 'attached' },
-      { id: 103, name: 'Renda 01', status: 'Vencido 05 dias', days: -5, type: 'attached' },
-      { id: 102, name: 'Residência', status: 'Validade: 10 Dias', days: 10, type: 'attached' },
-      { id: 101, name: 'CNH', status: 'Validade: 1290 dias', days: 1290, type: 'attached' },
-      { id: 201, name: 'Certidão de nascimento', status: 'Opcional', type: 'optional' },
-      { id: 202, name: 'Termo Cartório Email', status: 'Obrigatório', type: 'required' },
-    ].sort((a, b) => {
-      const typeOrder = { required: 1, attached: 2, optional: 3 };
-      const aSort = typeOrder[a.type] || 99;
-      const bSort = typeOrder[b.type] || 99;
-
-      if (aSort !== bSort) return aSort - bSort;
-      if (a.type === 'attached') return a.days - b.days;
-      return a.id - b.id;
-    });
-    // --- Fim da Lógica de Ordenação ---
+    // --- Lógica de Contadores e Cores para os Cabeçalhos ---
+    // Contador de Subtarefas: (concluídas / total)
+    const totalSubtasks = subtasks.length;
+    const completedSubtasks = subtasks.filter(task => task.completed === task.total).length;
+    const subtaskCounter = `(${completedSubtasks}/${totalSubtasks})`;
+    // Define a cor do título: verde se tudo estiver concluído, vermelho caso contrário.
+    const subtaskHeaderClass = totalSubtasks > 0 && completedSubtasks === totalSubtasks ? 'status-completed-header' : 'text-danger';
 
     accordionContent.innerHTML = `
       <div class="task-details-container">
@@ -531,30 +746,26 @@ Aqui você define a data de conclusão, a hora (opcional) e a prioridade da tare
 Resumo da Tarefa (este quadro):
 Este campo serve para descrever o objetivo geral e os detalhes importantes da tarefa. Por padrão, ele é somente leitura. Clique no ícone de lápis (✏️) para editar o texto. Ao clicar, o ícone mudará para um disquete (💾). Clique no disquete para salvar suas alterações.
 
+Ordenação da Lista de Tarefas:
+A lista de tarefas principal é ordenada por uma "data fictícia", calculada somando os dias da prioridade à data de conclusão. Tarefas sem hora definida são consideradas para as 17:59. O desempate é feito pelo código da tarefa.
+
 Subtarefas:
 Liste aqui os passos ou ações necessárias para concluir a tarefa principal.
-- Ordenação: A lista é organizada para focar no que é mais importante: primeiro as tarefas parcialmente concluídas, depois as não iniciadas e, por último, as já concluídas.
-- Seleção: Clique em uma subtarefa para ver seu checklist detalhado no quadro abaixo.
+- Cor, Contagem e Ordenação: O título do quadro fica verde quando todas as subtarefas estão concluídas, e vermelho se houver pendências. Ele também mostra o total de tarefas concluídas (ex: 3/5).
+- Seleção: Clique em uma subtarefa para exibir, logo abaixo, seu checklist detalhado e a lista de documentos associados a ela.
 
-Documentos:
-Anexe e gerencie os documentos relacionados a esta tarefa.
-- Ordenação: A lista é ordenada por criticidade: primeiro os documentos "Obrigatórios" pendentes, depois os anexados (ordenados por vencimento), e por último os "Opcionais" pendentes.
-- Seleção: Clique em um documento para ver seus detalhes e os arquivos anexados no quadro abaixo.
-
-Quadro de Detalhes (abaixo):
-Este quadro é dinâmico. Ele exibirá o checklist da subtarefa selecionada ou os detalhes e arquivos do documento selecionado.
+Quadros de Detalhes (Checklist e Documentos):
+Ao selecionar uma subtarefa, dois novos quadros aparecerão: o de Checklist e o de Documentos.
+- Cores e Contadores de Documentos: O título do quadro de documentos fica verde se todos os obrigatórios estiverem em dia, e vermelho caso contrário. O contador mostra (Obrigatórios em Dia / Total de Obrigatórios). O nome de um documento obrigatório fica verde se estiver em dia, e laranja se estiver pendente ou vencido.
 
 Movimentações e Logs (final da página):
 Use os quadros abaixo para adicionar novas informações ao histórico da tarefa e para consultar o log de todas as ações realizadas no sistema.</textarea>
         </div>
 
-        <!-- Container para os quadros de Subtarefas e Documentos -->
-        <div class="quadro-col-container">
-
-          <!-- Quadro de Subtarefas -->
-          <div class="task-quadro">
+        <!-- Quadro de Subtarefas (agora único e principal) -->
+        <div class="task-quadro">
             <div class="quadro-header">
-              <h4>Subtarefas</h4>
+              <h4 class="${subtaskHeaderClass}">Subtarefas ${subtaskCounter}</h4>
               <button id="add-subtask-btn" class="icon-btn" title="Adicionar Subtarefa">+</button>
             </div>
             <ul id="subtask-list" class="item-list-container">${subtasks.map(task => `
@@ -563,33 +774,10 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
                 <span class="item-status ${task.completed === task.total ? 'status-completed' : 'status-pending'}">${task.status}</span>
               </li>`).join('')}</ul>
           </div>
-
-          <!-- Quadro de Documentos -->
-          <div class="task-quadro">
-            <div class="quadro-header">
-              <h4>Documentos</h4>
-              <button id="add-document-btn" class="icon-btn" title="Adicionar Documento">+</button>
-            </div>
-            <ul id="document-list" class="item-list-container">${documents.map(doc => `
-              <li class="document-item" data-document-id="${doc.id}" data-type="${doc.type}">
-                <span>${doc.name}</span>
-                <span class="item-status ${
-                  doc.type === 'required' ? 'status-obrigatorio' :
-                  doc.type === 'optional' ? 'status-opcional' :
-                  doc.days < 0 ? 'status-expired' : 
-                  doc.days <= 30 ? 'status-warning' : 'status-valid'
-                }">${doc.status}</span>
-              </li>`).join('')}</ul>
-          </div>
-        </div>
-
-        <!-- Quadro Dinâmico (Checklist ou Detalhes do Documento) -->
-        <div id="dynamic-details-quadro" class="task-quadro">
-          <!-- O conteúdo aqui será preenchido dinamicamente -->
-          <div class="quadro-header">
-            <h4>Checklist</h4>
-          </div>
-          <p class="placeholder-text">Selecione uma subtarefa acima para ver seu checklist.</p>
+        
+        <!-- Área Dinâmica para Detalhes da Subtarefa (Checklist e Documentos) -->
+        <div id="dynamic-content-area" style="display: none;">
+          <p class="placeholder-text">Selecione uma subtarefa para ver seu checklist e documentos.</p>
         </div>
 
         <!-- Quadro para Adicionar Movimentação -->
@@ -631,37 +819,109 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     `;
   }; // fim da função abrirDetalheTarefa
 
-  /**
-   * Atualiza o quadro de checklist com base na subtarefa selecionada.
-   * @param {string} subtaskId - O ID da subtarefa que foi clicada.
-   */
-  const atualizarQuadroChecklist = (subtaskId) => {
-    const dynamicQuadro = document.getElementById('dynamic-details-quadro');
-    if (!dynamicQuadro) return;
+  const exibirDetalhesSubtarefa = (subtaskId) => {
+    const dynamicArea = document.getElementById('dynamic-content-area');
+    if (!dynamicArea) return;
 
-    // Garante que o quadro de detalhes do documento seja limpo/ocultado
-    dynamicQuadro.style.display = 'flex';
+    dynamicArea.style.display = 'block';
 
-    // Simulação: Monta um checklist de exemplo. No futuro, isso virá da API.
-    dynamicQuadro.innerHTML = `
-      <div class="quadro-header">
-        <h4>Checklist da Subtarefa #${subtaskId}</h4>
-        <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
+    // --- Simulação de dados para a subtarefa ---
+    // Ordena documentos: Vencidos/próximos de vencer primeiro.
+    const documents = [
+      // Adicionamos a propriedade 'isMandatory' para identificar os documentos obrigatórios.
+      { id: 104, name: 'Renda 02', status: 'Vencido 35 dias', days: -35, type: 'attached', isMandatory: false }, // Não obrigatório e vencido
+      { id: 103, name: 'Renda 01', status: 'Vencido 05 dias', days: -5, type: 'attached', isMandatory: false }, // Não obrigatório
+      { id: 102, name: 'Residência', status: 'Validade: 10 Dias', days: 10, type: 'attached', isMandatory: true }, // Obrigatório e em dia
+      { id: 101, name: 'CNH', status: 'Validade: 1290 dias', days: 1290, type: 'attached', isMandatory: true }, // Obrigatório e em dia
+      { id: 201, name: 'Certidão de nascimento', status: 'Opcional', type: 'optional', isMandatory: false }, // Não obrigatório
+      { id: 202, name: 'Termo Cartório Email', status: 'Obrigatório', type: 'required', isMandatory: true }, // Obrigatório e pendente
+    ].sort((a, b) => {
+      const typeOrder = { required: 1, attached: 2, optional: 3 };
+      const aSort = typeOrder[a.type] || 99;
+      const bSort = typeOrder[b.type] || 99;
+
+      if (aSort !== bSort) return aSort - bSort;
+      if (a.type === 'attached') return a.days - b.days;
+      return a.id - b.id;
+    });
+
+    // --- REGRAS DE NEGÓCIO: Contadores e Cores para os Documentos ---
+    // 1. Filtra todos os documentos marcados como 'isMandatory: true'.
+    const mandatoryDocuments = documents.filter(doc => doc.isMandatory);
+    const totalMandatoryCount = mandatoryDocuments.length;
+
+    // 2. Conta, dentre os obrigatórios, quantos já foram anexados ('attached') e estão com a validade em dia (days >= 0).
+    const attachedAndValidMandatoryCount = mandatoryDocuments.filter(doc => doc.type === 'attached' && doc.days >= 0).length;
+
+    const documentCounter = `(${attachedAndValidMandatoryCount}/${totalMandatoryCount})`;
+
+    // 3. Define a cor do título do quadro de Documentos:
+    //    - 'status-completed-header' (Verde): Se o total de obrigatórios for maior que zero e todos estiverem em dia.
+    //    - 'text-danger' (Vermelho): Caso contrário.
+    const documentHeaderClass = totalMandatoryCount > 0 && attachedAndValidMandatoryCount === totalMandatoryCount ? 'status-completed-header' : 'text-danger';
+    // --- Fim das Regras de Negócio ---
+
+
+    dynamicArea.innerHTML = `
+      <div class="quadro-col-container">
+        <!-- Quadro de Checklist -->
+        <div class="task-quadro">
+          <div class="quadro-header">
+            <h4>Checklist da Subtarefa #${subtaskId}</h4>
+          </div>
+          <ul class="checklist-container">
+            <li><input type="checkbox" id="chk1" checked> <label for="chk1">Item 1 do checklist (ex: Cópia do RG)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+            <li><input type="checkbox" id="chk2"> <label for="chk2">Item 2 do checklist (ex: Comprovante de Renda)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+            <li><input type="checkbox" id="chk3"> <label for="chk3">Item 3 do checklist (ex: Análise de Crédito)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+          </ul>
+        </div>
+
+        <!-- Quadro de Documentos da Subtarefa -->
+        <div class="task-quadro">
+          <div class="quadro-header">
+            <h4 class="${documentHeaderClass}">Documentos ${documentCounter}</h4>
+            <button class="icon-btn" title="Adicionar Documento">+</button>
+          </div>
+          <ul class="item-list-container">${documents.map(doc => { // Início do map de documentos
+            // --- REGRAS DE NEGÓCIO: Cor do texto do nome do documento ---
+            // Define a classe de cor para o texto com base na obrigatoriedade e status.
+            let nameClass = '';
+            if (doc.isMandatory) {
+              // Se for obrigatório, verifica se está em dia ou se está pendente/vencido.
+              if (doc.type === 'attached' && doc.days >= 0) {
+                nameClass = 'text-success'; // Verde: Obrigatório e em dia.
+              } else {
+                nameClass = 'text-orange'; // Laranja: Obrigatório, mas pendente ou vencido.
+              }
+            } // Se não for obrigatório (isMandatory: false), a classe permanece vazia (cor padrão branca).
+            // --- Fim da Regra de Negócio ---
+
+            return `<li class="document-item" data-document-id="${doc.id}" data-type="${doc.type}">
+              <span class="${nameClass}">${doc.name}</span>
+              <span class="item-status ${
+                doc.type === 'required' ? 'status-obrigatorio' :
+                doc.type === 'optional' ? 'status-opcional' :
+                doc.days < 0 ? 'status-expired' :
+                doc.days <= 30 ? 'status-warning' : 'status-valid'
+              }">${doc.status}</span></li>`; // CORREÇÃO: Adicionado '</li>' aqui.
+          }).join('')}
+          </ul>
+        </div> 
       </div>
-      <ul class="checklist-container">
-        <li><input type="checkbox" id="chk1" checked> <label for="chk1">Item 1 do checklist (ex: Cópia do RG)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
-        <li><input type="checkbox" id="chk2"> <label for="chk2">Item 2 do checklist (ex: Comprovante de Renda)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
-        <li><input type="checkbox" id="chk3"> <label for="chk3">Item 3 do checklist (ex: Análise de Crédito)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
-      </ul>
+
+      <!-- Quadro para detalhes do documento selecionado -->
+      <div id="dynamic-details-quadro" class="task-quadro" style="display: none;">
+         <p class="placeholder-text">Selecione um documento acima para ver os detalhes.</p>
+      </div>
     `;
-  }; // fim da função atualizarQuadroChecklist
+  }
 
   /**
    * Atualiza o quadro de detalhes com base no documento selecionado.
    * @param {string} documentId - O ID do documento que foi clicado.
    */
   const atualizarQuadroDocumento = (documentId) => {
-    const dynamicQuadro = document.getElementById('dynamic-details-quadro');
+    const dynamicQuadro = document.getElementById('dynamic-details-quadro'); // Agora este é o quadro de 3º nível
     const clickedItem = document.querySelector(`.document-item[data-document-id="${documentId}"]`);
     const docType = clickedItem ? clickedItem.dataset.type : null;
 

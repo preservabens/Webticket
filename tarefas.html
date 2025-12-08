@@ -3,163 +3,79 @@
     <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
     <h2>Tarefas</h2>
   </div>
+  <button type="button" id="btn-proxima-tarefa" class="page-header-btn">Próxima Tarefa</button>
 </div>
+<p>Gerencie suas tarefas diárias e acompanhe o progresso.</p>
+<br>
 
 <div class="accordion-container">
-  <!-- Grupo de Busca e Resultados -->
+  <!-- Grupo de Busca -->
   <details class="accordion-group">
     <summary class="accordion-title">Busca</summary>
     <div class="accordion-content">
-      <p>Busque por pessoas, imóveis ou contratos para visualizar ou criar tarefas relacionadas.</p>
-      <br>
-
-      <!-- Controles de Busca -->
       <div class="search-controls">
-        <input type="text" class="form-input" placeholder="Digite para buscar..." />
-        <button type="button" class="page-header-btn">Buscar</button>
+        <input type="text" id="search-input" class="form-input" placeholder="Digite o ID, título ou parte do resumo da tarefa...">
+        <button type="button" id="btn-buscar" class="page-header-btn">Buscar</button>
       </div>
 
-      <br>
-      <h4>Resultados da Busca</h4>
-      <!-- Ao clicar em "Buscar", esta tabela será preenchida com os resultados. -->
-      <div class="table-container">
-        <table class="point-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Endereço</th>
-              <th>Tipo</th>
-              <th>Relação</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Fulano de Tal</td>
-              <td>Rua Xxxxx</td>
-              <td>Imóvel</td>
-              <td>Cliente</td>
-            </tr>
-            <tr>
-              <td>Ciclano de Tal</td>
-              <td>Rua yyyyy</td>
-              <td>Pessoa Física</td>
-              <td>Não Cliente</td>
-            </tr>
-            <tr>
-              <td>Beltrano de Tal</td>
-              <td>Rua zzzzzz</td>
-              <td>Pessoa Jurídica</td>
-              <td>Fornecedor</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <br>
-
-      <h4>Chamados Relacionados</h4>
-      <!-- 
-        Ao selecionar um item na tabela de "Resultados da Busca", 
-        esta segunda tabela será preenchida com as tarefas/chamados relacionados.
-      -->
-      <div class="table-container">
-        <table class="point-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Data Conclusão</th>
-              <th>Tipo</th>
-              <th>Título</th>
-              <th>Relacionado Principal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1245</td>
-              <td class="text-danger">05/12/2025</td>
-              <td>Manutenção</td>
-              <td>Vazamento de Gás</td>
-              <td>Condomínio Mormar</td>
-            </tr>
-            <tr>
-              <td>1472</td>
-              <td>05/12/2027</td>
-              <td>Boletos</td>
-              <td>Taxa a maior lançada</td>
-              <td>Condomínio Mormar</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <br>
-
-      <!-- 
-        Ao selecionar um chamado na tabela "Chamados Relacionados",
-        o campo de texto abaixo será preenchido com um resumo do chamado.
-      -->
-      <div class="memo-container">
-        <div class="memo-header">
-          <button id="btn-trabalhar-chamado" class="page-header-btn" data-task-id="1245">Trabalhar com esse chamado</button>
-          <h4>Resumo do Chamado</h4>
+      <!-- Tabela 1: Processos (inicialmente oculta) -->
+      <div id="search-results-processos" class="search-step" style="display: none;">
+        <h5>1. Selecione o Processo:</h5>
+        <div class="table-container">
+          <table class="point-table">
+            <thead><tr><th>ID</th><th>Processo</th><th>Responsável</th></tr></thead>
+            <tbody>
+              <tr class="selectable-row" data-process-id="1"><td>15</td><td>Nova Locação</td><td>Ana</td></tr>
+              <tr class="selectable-row" data-process-id="2"><td>22</td><td>Manutenção de Imóvel</td><td>Carlos</td></tr>
+            </tbody>
+          </table>
         </div>
-        <textarea class="form-input memo-area" readonly>Nesta tela, ao clicar em buscar, na primeira tabela ele irá mostrar uma lista de pessoas ou imóveis relacionados a busca. Na segunda tela irá mostrar, com a mesma busca, chamados que tenham o que está procurando. 
+      </div>
 
-Se clicar um resultado da primeira lista a segunda lsita atualizá com todos os chamados relacionados com essa pessoa. Inicialmente será sempre mostrando o chamado mais recente em cima e o menos recente em baixo. 
+      <!-- Tabela 2: Tarefas do Processo (inicialmente oculta) -->
+      <div id="search-results-tarefas" class="search-step" style="display: none;">
+        <h5>2. Selecione a Tarefa:</h5>
+        <div class="table-container">
+          <table class="point-table">
+            <thead><tr><th>ID</th><th>Tarefa</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr class="selectable-row" data-task-id="1466"><td>1466</td><td>Nova Locação Rio das Pedras 301</td><td>Em andamento</td></tr>
+              <tr class="selectable-row" data-task-id="1890"><td>1890</td><td>Verificar documentação</td><td>Pendente</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <br>
+        <button type="button" id="btn-trabalhar-chamado" class="page-header-btn" data-task-id="1466" style="display: none;">Trabalhar com esse chamado</button>
+      </div>
 
-Ao clicar na segunda tela ele atualiza este campo com um resumo/detalhamento de todo o chamado selecionado. 
-
-O clicar no botão trabalhar com esse chamaos ele carregará o chamado no item tarefa selecionada e minimizará esse item de busca.</textarea>
+      <!-- Detalhes Finais (inicialmente ocultos) -->
+      <div id="search-final-details" class="search-step" style="display: none;">
+        <!-- O conteúdo detalhado da tarefa será injetado aqui pelo JS -->
       </div>
     </div>
   </details>
 
   <!-- Grupo Lista de Tarefas -->
   <details class="accordion-group">
-    <summary class="accordion-title">Lista de Tarefas</summary>
+    <summary class="accordion-title" data-section="lista-tarefas">Lista de Tarefas</summary>
     <div class="accordion-content">
-      <!-- 
-        Botão "Próxima Tarefa".
-        Ao ser clicado, aciona a função 'selecionarProximaTarefa()' em main.js.
-        Esta função organiza as tarefas de forma intercalada: uma "nova" (de cliente)
-        e uma do "sistema" (interna), sempre priorizando a mais urgente de cada tipo
-        (baseado na data e prioridade 0-10). Isso garante que novas demandas sejam
-        atendidas rapidamente sem parar o fluxo de trabalho interno.
-      -->
-      <button type="button" id="btn-proxima-tarefa" class="page-header-btn">Próxima tarefa</button>
-      <br><br>
-      <p>Abaixo será exibida a lista de tarefas. Clicar em uma tarefa preencherá o acordion "tarefa selecionada"</p>
+      <div class="search-controls">
+        <button type="button" id="btn-proxima-tarefa-accordion" class="page-header-btn">Próxima Tarefa</button>
+      </div>
       <div class="table-container">
         <table class="point-table">
           <thead>
             <tr>
               <th>Código</th>
+              <th>Prioridade</th>
               <th>Data Conclusão</th>
-              <th>TIPO</th>
-              <th>Título da Tarefa</th>
+              <th>Tipo</th>
+              <th>Título</th>
               <th>Relação</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1245</td>
-              <td class="text-danger">05/12/2025</td>
-              <td>Manutenção</td>
-              <td>Vazamento de Gás</td>
-              <td>Condomínio Mormar</td>
-            </tr>
-            <tr>
-              <td>1472</td>
-              <td>05/12/2027</td>
-              <td>Boletos</td>
-              <td>Taxa Maior Lançada</td>
-              <td>Condomínio Mormar</td>
-            </tr>
-            <tr>
-              <td>1466</td>
-              <td>05/12/2028</td>
-              <td>Nova Locação</td>
-              <td>Rio das Pedras 301</td>
-              <td>Maria das Graças</td>
-            </tr>
+            <!-- O conteúdo da tabela será preenchido dinamicamente -->
           </tbody>
         </table>
       </div>
@@ -168,9 +84,7 @@ O clicar no botão trabalhar com esse chamaos ele carregará o chamado no item t
 
   <!-- Grupo Tarefa Selecionada -->
   <details class="accordion-group" open>
-    <summary class="accordion-title">Tarefa Selecionada</summary>
-    <div class="accordion-content">
-      <p>Selecione uma tarefa na lista acima para ver os detalhes aqui.</p>
-    </div>
+    <summary class="accordion-title" data-section="tarefa-selecionada">Tarefa Selecionada</summary>
+    <div class="accordion-content"></div>
   </details>
 </div>

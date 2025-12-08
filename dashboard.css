@@ -282,27 +282,28 @@ h1 {
 
 /* --- Estilos para Largura das Colunas da Tabela de Ponto --- */
 .point-table {
-  table-layout: fixed; /* Garante que as larguras definidas sejam respeitadas */
+  /* table-layout: fixed; /* Comentado para permitir que o min-width funcione melhor com conteúdo variável */
+  width: 100%;
 }
 
 .point-table .col-action {
-  width: 60px;
+  min-width: 60px;
 }
 
 .point-table .col-date {
-  width: 110px;
+  min-width: 110px;
 }
 
 .point-table .col-time {
-  width: 90px;
+  min-width: 90px;
 }
 
 .point-table .col-ho {
-  width: 90px;
+  min-width: 90px;
 }
 
 .point-table .col-obs {
-  width: auto; /* Ocupa o espaço restante */
+  min-width: 200px; /* Garante um espaço mínimo para observações */
 }
 
 .point-table .ho-sim {
@@ -389,6 +390,18 @@ h1 {
 
 .search-controls .form-input[type="text"] {
   flex-grow: 1; /* Faz o campo de texto ocupar o espaço disponível */
+}
+
+/* Estilos para as etapas da busca */
+.search-step {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(24, 117, 232, 0.3);
+}
+
+.point-table .selectable-row:hover {
+  cursor: pointer;
+  background-color: rgba(24, 117, 232, 0.3);
 }
 
 
@@ -549,6 +562,13 @@ body.sidebar-collapsed .nav-btn {
   border-bottom: 1px solid rgba(24, 117, 232, 0.3);
 }
 
+/* Estilos para o header colapsável de Subtarefas/Documentos */
+/* .task-quadro .quadro-header {
+  cursor: pointer; // Removido, pois não é mais colapsável por padrão
+  position: relative;
+} */
+
+
 .quadro-header h4 {
   font-size: 18px;
   color: var(--text-color);
@@ -593,6 +613,11 @@ body.sidebar-collapsed .nav-btn {
   border-left: 4px solid var(--accent-color);
 }
 
+.point-table tr.selected {
+  background-color: rgba(24, 117, 232, 0.4);
+  border: 1px solid var(--accent-color);
+}
+
 .item-status {
   font-size: 12px;
   padding: 3px 8px;
@@ -625,11 +650,6 @@ body.sidebar-collapsed .nav-btn {
   background-color: #f8f9fa; /* Branco */
   color: #333;
   border: 1px solid #ccc;
-}
-
-/* Oculta o quadro de detalhes dinâmico por padrão */
-#dynamic-details-quadro {
-  display: none;
 }
 
 /* --- Estilos para Checklist e Detalhes de Documento --- */
@@ -750,6 +770,19 @@ body.sidebar-collapsed .nav-btn {
 
 .text-danger {
   color: #dc3545; /* Vermelho */
+  font-weight: 700;
+}
+
+.text-orange {
+  color: #fd7e14; /* Laranja */
+}
+
+.text-success {
+  color: #28a745; /* Verde */
+}
+
+.status-completed-header {
+  color: #28a745; /* Verde */
   font-weight: 700;
 }
 
