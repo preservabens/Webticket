@@ -91,13 +91,16 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       currentGroup.toggleAttribute('open');
 
       // --- CORREÇÃO PARA BUG DE SCROLL EM MOBILE (ANDROID/CHROME) ---
-      // Força o navegador a recalcular o layout e a área rolável.
-      // Alguns navegadores móveis não atualizam a capacidade de rolagem quando o
-      // conteúdo de um accordion é alterado. "Piscar" a propriedade display
-      // força um "reflow", resolvendo o problema da rolagem travada.
-      contentTarget.style.display = 'block';
-      // A propriedade é retornada para 'flex' imediatamente. A mudança é imperceptível.
-      contentTarget.style.display = ''; // Reseta para o valor padrão do CSS
+      // Força o navegador a recalcular a área rolável. Abordagens anteriores
+      // não foram suficientes. Esta nova estratégia desabilita e reabilita
+      // a rolagem no contêiner, forçando um recálculo mais robusto que
+      // resolve o bug da rolagem "congelada" em um único gesto.
+      contentTarget.style.overflowY = 'hidden';
+      // Usamos um setTimeout de 0ms para garantir que a reabilitação da rolagem
+      // ocorra no próximo ciclo de eventos da renderização do navegador.
+      setTimeout(() => {
+        contentTarget.style.overflowY = 'auto';
+      }, 0);
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
