@@ -262,6 +262,9 @@ h1 {
 /* Adiciona rolagem horizontal para a tabela em telas pequenas */
 .table-container {
   overflow-x: auto;
+  /* --- CORREÇÃO PARA SCROLL EM MOBILE (CHROME/ANDROID) --- */
+  /* Resolve o conflito entre a rolagem vertical da página e a horizontal da tabela, evitando que a rolagem "trave". */
+  touch-action: pan-y;
 }
 
 .point-table {
