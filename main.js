@@ -220,22 +220,33 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       abrirDetalheTarefa(tarefaParaCarregar);
     } // fim do if (btn-trabalhar-chamado)
 
-    // --- LÓGICA DA BUSCA EM ETAPAS ---
-    // 1. Clique no botão "Buscar"
+    // --- REGRAS DE NEGÓCIO: LÓGICA DA BUSCA EM ETAPAS ---
+    // O fluxo de busca é dividido em etapas para guiar o usuário.
+    // 1. O usuário digita um termo e clica em "Buscar".
+    // 2. A primeira tabela (Processos) exibe pessoas/imóveis relacionados ao termo.
+    // 3. A segunda tabela (Tarefas) exibe chamados relacionados ao termo.
+    // 4. Se o usuário clica em um item da primeira tabela, a segunda é filtrada para mostrar apenas chamados daquele item.
+    // 5. Se o usuário clica em um item da segunda tabela, um resumo é exibido na terceira etapa.
+    // 6. O botão "Trabalhar com esse chamado" carrega a tarefa na área de trabalho principal.
+
+    // Etapa 1: Clique no botão "Buscar"
     if (event.target.id === 'btn-buscar') {
       document.getElementById('search-results-processos').style.display = 'block';
-      document.getElementById('search-results-tarefas').style.display = 'none';
+      document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
     }
 
-    // 2. Clique em uma linha da primeira tabela (Processos)
+    // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
     const processoRow = event.target.closest('#search-results-processos .selectable-row');
     if (processoRow) {
       // Remove a seleção de outras linhas na mesma tabela
       processoRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
       // Adiciona a seleção à linha clicada
       processoRow.classList.add('selected');
-      // Mostra a próxima etapa
+      
+      // REGRAS DE NEGÓCIO: No futuro, aqui será feita uma chamada de API para recarregar
+      // a segunda tabela com as tarefas filtradas pelo processo/pessoa selecionado.
+      // Por enquanto, apenas mantemos a segunda tabela visível.
       document.getElementById('search-results-tarefas').style.display = 'block';
       document.getElementById('search-final-details').style.display = 'none';
     }
@@ -274,6 +285,12 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
         <p><strong>Subtarefas:</strong> Nenhuma subtarefa associada.</p>
         <p><strong>Documentos:</strong> Nenhum documento associado.</p>
         <p><strong>Log:</strong> Nenhuma entrada de log.</p>
+        <hr>
+        <p><strong>Como funciona a busca:</strong></p>
+        <p>Nesta tela, ao clicar em "Buscar", a primeira tabela mostrará uma lista de pessoas ou imóveis relacionados à sua pesquisa. A segunda tabela, por sua vez, mostrará os chamados que correspondem ao termo buscado.</p>
+        <p>Se você clicar em um resultado da primeira lista (Pessoas/Imóveis), a segunda lista será atualizada para exibir todos os chamados relacionados a esse item, ordenados do mais recente para o mais antigo.</p>
+        <p>Ao clicar em um item na segunda tela (Tarefas), este campo é atualizado com um resumo detalhado do chamado selecionado.</p>
+        <p>Finalmente, ao clicar no botão "Trabalhar com esse chamado", o sistema carregará a tarefa no accordion "Tarefa Selecionada" e minimizará este accordion de "Busca".</p>
       `;
       document.getElementById('search-final-details').style.display = 'block';
       document.getElementById('btn-trabalhar-chamado').style.display = 'inline-block';
