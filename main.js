@@ -234,6 +234,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       document.getElementById('search-results-processos').style.display = 'block';
       document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
+
+      // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
+      // Quando as tabelas de busca são exibidas (mudando de display:none para display:block),
+      // o navegador pode travar a rolagem. Esta técnica força um recálculo da área rolável.
+      // Desabilitamos a rolagem e a reabilitamos no próximo ciclo de renderização (com setTimeout de 0ms).
+      contentTarget.style.overflowY = 'hidden';
+      setTimeout(() => {
+        contentTarget.style.overflowY = 'auto';
+      }, 0);
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
