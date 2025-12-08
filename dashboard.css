@@ -274,8 +274,9 @@ h1 {
   /* --- CORREÇÃO DEFINITIVA PARA SCROLL EM MOBILE (BASEADO EM ANÁLISE TÉCNICA) --- */
   /* 1. Desativa a "âncora de rolagem" do navegador, que pode causar o travamento ao injetar conteúdo dinâmico. */
   overflow-anchor: none;
-  /* 2. Garante que gestos verticais sejam sempre para rolagem da página, evitando conflito com a rolagem horizontal da tabela. */
-  touch-action: pan-y; 
+  /* 2. Permite que o navegador gerencie gestos de rolagem tanto na vertical (pan-y) quanto na horizontal (pan-x) dentro deste contêiner.
+     Isso é essencial para que a rolagem lateral da tabela e a rolagem vertical da página funcionem juntas no Android. */
+  touch-action: pan-x pan-y;
   /* 3. Promove este contêiner para sua própria camada de composição (GPU), garantindo rolagem fluida e desacoplada. */
   will-change: scroll-position;
   /* 4. Garante a rolagem com inércia ("momentum") no iOS. */
