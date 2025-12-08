@@ -51,6 +51,9 @@ h1 {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  /* --- CORREÇÃO PARA SCROLL EM MOBILE (CHROME/ANDROID) --- */
+  /* Cria um novo contexto de empilhamento que ajuda a resolver bugs de rolagem com inércia em dispositivos móveis. */
+  position: relative;
 }
 
 #content-target {
