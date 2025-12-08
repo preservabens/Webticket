@@ -112,15 +112,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
 
-      // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
-      // Aplica a mesma técnica da busca. Quando um accordion abre ou fecha,
-      // a altura do conteúdo muda, e precisamos forçar o navegador
-      // a recalcular a área rolável. Usamos requestAnimationFrame para garantir
-      // que a correção seja aplicada após o navegador ter renderizado a mudança.
-      contentTarget.style.overflowY = 'hidden';
-      requestAnimationFrame(() => {
-        contentTarget.style.overflowY = 'auto';
-      }, 0);
       // Força o recálculo da rolagem para corrigir o bug no Android.
       forceScrollRecalculation();
     }
@@ -269,14 +260,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
 
-      // --- CORREÇÃO PARA BUG DE SCROLL NO ANDROID ---
-      // Quando as tabelas de busca são exibidas (mudando de display:none para display:block),
-      // o navegador pode travar a rolagem. Esta técnica força um recálculo da área rolável
-      // usando requestAnimationFrame para garantir que a correção rode após a tabela ser desenhada.
-      contentTarget.style.overflowY = 'hidden';
-      requestAnimationFrame(() => {
-          contentTarget.style.overflowY = 'auto';
-      });
       // Força o recálculo da rolagem para corrigir o bug no Android.
       forceScrollRecalculation();
     }
