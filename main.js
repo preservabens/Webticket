@@ -58,28 +58,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
   };
 
-  /**
-   * Força o navegador (especialmente no Android) a recalcular a área rolável.
-   * Isso corrige o bug onde a rolagem trava após o conteúdo da página mudar de altura dinamicamente.
-   */
-  const forceScrollRecalculation = () => {
-    if (!contentTarget) return; // Sai se o alvo não existir.
-
-    // 1. Salva a posição atual da rolagem.
-    const currentScrollTop = contentTarget.scrollTop;
-
-    // 2. Força a rolagem para o final do conteúdo. Este é o passo que "acorda" o navegador.
-    contentTarget.scrollTop = contentTarget.scrollHeight;
-
-    // 3. Usa requestAnimationFrame para garantir que a próxima ação ocorra no próximo ciclo de renderização.
-    // Isso dá tempo para o navegador processar a rolagem para o final antes de voltarmos.
-    requestAnimationFrame(() => {
-      // 4. Restaura a posição original da rolagem de forma instantânea.
-      // O usuário não perceberá essa "ida e volta".
-      contentTarget.scrollTop = currentScrollTop;
-    });
-  };
-
   // Adiciona o evento de clique para o botão principal de toggle da sidebar
   if (sidebarToggleBtn) {
     sidebarToggleBtn.addEventListener('click', handleMenuToggle);
@@ -111,9 +89,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
-
-      // Força o recálculo da rolagem para corrigir o bug no Android.
-      forceScrollRecalculation();
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
@@ -259,9 +234,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       document.getElementById('search-results-processos').style.display = 'block';
       document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
       document.getElementById('search-final-details').style.display = 'none';
-
-      // Força o recálculo da rolagem para corrigir o bug no Android.
-      forceScrollRecalculation();
     }
 
     // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
@@ -335,6 +307,8 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       `;
       document.getElementById('search-final-details').style.display = 'block';
       document.getElementById('btn-trabalhar-chamado').style.display = 'inline-block';
+      // Força a rolagem para o novo conteúdo, ajudando a corrigir falhas de renderização e melhorando a UX
+      document.getElementById('search-final-details').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     // --- FIM DA LÓGICA DA BUSCA ---
 
@@ -767,14 +741,7 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       <div class="task-details-container">
         <!-- Controles de Data e Prioridade -->
         <div class="task-header-controls">
-          <div class="form-field">
-            <label for="task-due-date">Data de Conclusão:</label>
-            <input type="date" id="task-due-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
-          </div>
-          <div class="form-field">
-            <label for="task-due-time">Hora (opcional):</label>
-            <input type="time" id="task-due-time" class="form-input">
-          </div>
+          <!-- 1. Prioridade (Movido para o início) -->
           <div class="form-field">
             <label for="task-priority">Prioridade:</label>
             <select id="task-priority" class="form-input">
@@ -791,6 +758,37 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
               <option value="10">10 (Baixa)</option>
             </select>
           </div>
+
+          <!-- 2. Data de Conclusão -->
+          <div class="form-field">
+            <label for="task-due-date">Data de Conclusão:</label>
+            <input type="date" id="task-due-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+
+          <!-- 3. Hora -->
+          <div class="form-field">
+            <label for="task-due-time">Hora (opcional):</label>
+            <input type="time" id="task-due-time" class="form-input">
+          </div>
+
+          <!-- 4. Repetir (Novo) -->
+          <div class="form-field">
+            <label for="task-repeat">Repetir:</label>
+            <select id="task-repeat" class="form-input">
+              <option value="none">Não</option>
+              <option value="daily">Diariamente</option>
+              <option value="weekly">Semanalmente</option>
+              <option value="monthly">Mensalmente</option>
+              <option value="yearly">Anualmente</option>
+              <option value="periodic">Periodicamente</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+
+          <!-- 5. Configurações Dinâmicas de Repetição -->
+          <div id="repeat-settings-wrapper" class="repeat-settings-wrapper" style="display: none;">
+             <!-- Conteúdo injetado via JS -->
+          </div>
         </div>
 
         <!-- Quadro de Resumo (Memo) -->
@@ -799,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
             <h4>Resumo da Tarefa #${tarefa.id} - ${tarefa.titulo}</h4>
             <button id="memo-edit-btn" class="icon-btn" title="Editar Resumo" data-mode="edit">✏️</button>
           </div>
-          <textarea id="memo-textarea" class="form-input memo-area" readonly>Esta é a área principal de trabalho da tarefa.
+          <textarea id="memo-textarea" class="form-input memo-area" rows="10" readonly>Esta é a área principal de trabalho da tarefa.
 
 Controles Principais (Topo):
 Aqui você define a data de conclusão, a hora (opcional) e a prioridade da tarefa (0 a 10). Esses valores são usados para calcular a urgência da tarefa no sistema.
@@ -822,23 +820,27 @@ Ao selecionar uma subtarefa, dois novos quadros aparecerão: o de Checklist e o 
 Movimentações e Logs (final da página):
 Use os quadros abaixo para adicionar novas informações ao histórico da tarefa e para consultar o log de todas as ações realizadas no sistema.</textarea>
         </div>
-
-        <!-- Quadro de Subtarefas (agora único e principal) -->
-        <div class="task-quadro">
-            <div class="quadro-header">
-              <h4 class="${subtaskHeaderClass}">Subtarefas ${subtaskCounter}</h4>
-              <button id="add-subtask-btn" class="icon-btn" title="Adicionar Subtarefa">+</button>
-            </div>
-            <ul id="subtask-list" class="item-list-container">${subtasks.map(task => `
-              <li class="subtask-item" data-subtask-id="${task.id}">
-                <span>${task.text}</span>
-                <span class="item-status ${task.completed === task.total ? 'status-completed' : 'status-pending'}">${task.status}</span>
-              </li>`).join('')}</ul>
-          </div>
         
-        <!-- Área Dinâmica para Detalhes da Subtarefa (Checklist e Documentos) -->
-        <div id="dynamic-content-area" style="display: none;">
-          <p class="placeholder-text">Selecione uma subtarefa para ver seu checklist e documentos.</p>
+        <!-- Wrapper para Colunas (Subtarefas | Checklist | Documentos) -->
+        <div class="task-columns-wrapper">
+          <!-- Quadro de Subtarefas -->
+          <div class="task-quadro task-col-item">
+              <div class="quadro-header">
+                <h4 class="${subtaskHeaderClass}">Subtarefas ${subtaskCounter}</h4>
+                <button id="add-subtask-btn" class="icon-btn" title="Adicionar Subtarefa">+</button>
+              </div>
+              <ul id="subtask-list" class="item-list-container">${subtasks.map(task => `
+                <li class="subtask-item" data-subtask-id="${task.id}">
+                  <span>${task.text}</span>
+                  <span class="item-status ${task.completed === task.total ? 'status-completed' : 'status-pending'}">${task.status}</span>
+                </li>`).join('')}</ul>
+            </div>
+        
+          <!-- Área Dinâmica para Detalhes da Subtarefa (Checklist e Documentos) -->
+          <!-- Usamos display: contents quando ativo para que os filhos sejam irmãos flex do quadro de subtarefas -->
+          <div id="dynamic-content-area" style="display: none;">
+            <p class="placeholder-text" style="width: 100%;">Selecione uma subtarefa para ver seu checklist e documentos.</p>
+          </div>
         </div>
 
         <!-- Quadro para Adicionar Movimentação -->
@@ -846,7 +848,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
           <div class="quadro-header">
             <h4>Adicionar Movimentação</h4>
           </div>
-          <textarea class="form-input" rows="4" placeholder="Digite aqui uma nova informação, comentário ou atualização sobre a tarefa..."></textarea>
+          <textarea class="form-input memo-area" rows="10" placeholder="Digite aqui uma nova informação, comentário ou atualização sobre a tarefa..."></textarea>
           <button class="page-header-btn" style="align-self: flex-end;">Salvar Movimentação</button>
         </div>
 
@@ -879,15 +881,200 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
       </div>
     `;
 
-    // Força o recálculo da rolagem após injetar todo o HTML da tarefa.
-    forceScrollRecalculation();
+    // --- Lógica de Repetição (Dinâmica) ---
+    const repeatSelect = document.getElementById('task-repeat');
+    const repeatWrapper = document.getElementById('repeat-settings-wrapper');
+
+    if (repeatSelect && repeatWrapper) {
+      repeatSelect.addEventListener('change', () => {
+        const val = repeatSelect.value;
+        repeatWrapper.innerHTML = '';
+        
+        if (val === 'none' || val === 'daily' || val === 'yearly') {
+          repeatWrapper.style.display = 'none';
+          return;
+        }
+
+        repeatWrapper.style.display = 'flex';
+
+        // Gera os dias da semana (D S T Q Q S S)
+        const generateWeekDays = () => {
+          const days = ['D', '2ª', '3ª', '4ª', '5ª', '6ª', 'S'];
+          return days.map((d, i) => `
+            <label class="week-day-opt"><input type="checkbox" value="${i}"> ${d}</label>
+          `).join('');
+        };
+
+        if (val === 'weekly') {
+          repeatWrapper.innerHTML = `
+            <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Repetir nos dias:</label>
+            <div class="week-selector">${generateWeekDays()}</div>
+          `;
+        } else if (val === 'monthly') {
+           const daysOptions = Array.from({length: 31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+           repeatWrapper.innerHTML = `
+             <div class="monthly-selector">
+               <div class="monthly-row">
+                 <input type="radio" name="monthly-type" value="day" checked id="m-type-day">
+                 <label for="m-type-day">No dia</label>
+                 <select class="form-input" style="width: 60px;">${daysOptions}</select>
+               </div>
+               <div class="monthly-row">
+                 <input type="radio" name="monthly-type" value="pos" id="m-type-pos">
+                 <label for="m-type-pos">Na</label>
+                 <select class="form-input" style="width: 96px;">
+                   <option value="1">1ª</option><option value="2">2ª</option><option value="3">3ª</option><option value="4">4ª</option><option value="last">Última</option>
+                 </select>
+                 <select class="form-input" style="width: 120px;">
+                   <option value="seg">Segunda</option><option value="ter">Terça</option><option value="qua">Quarta</option><option value="qui">Quinta</option><option value="sex">Sexta</option><option value="sab">Sábado</option><option value="dom">Domingo</option>
+                 </select>
+               </div>
+             </div>
+           `;
+        } else if (val === 'periodic') {
+          repeatWrapper.innerHTML = `
+            <div class="periodic-selector">
+              <label>Dias após a conclusão:</label>
+              <input type="number" class="form-input" style="width: 70px;" value="1" min="1">
+            </div>
+          `;
+        } else if (val === 'custom') {
+           const daysOptions = Array.from({length: 31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+           repeatWrapper.innerHTML = `
+             <div class="custom-selector">
+               <div class="custom-row">
+                 <span>A cada</span>
+                 <input type="number" class="form-input" style="width: 60px;" value="1" min="1">
+                 <select id="custom-period-type" class="form-input" style="width: 120px;">
+                   <option value="week">Semanas</option>
+                   <option value="month">Meses</option>
+                 </select>
+               </div>
+               <div id="custom-sub-options">
+                 <div class="week-selector">${generateWeekDays()}</div>
+               </div>
+             </div>
+           `;
+           // Listener para alternar entre dias da semana e dia do mês no modo personalizado
+           const customTypeSelect = document.getElementById('custom-period-type');
+           const customSubOptions = document.getElementById('custom-sub-options');
+           if(customTypeSelect && customSubOptions) {
+             customTypeSelect.addEventListener('change', () => {
+               if(customTypeSelect.value === 'week') {
+                 customSubOptions.innerHTML = `<div class="week-selector">${generateWeekDays()}</div>`;
+               } else {
+                 customSubOptions.innerHTML = `
+                   <div class="monthly-row">
+                     <span>No dia</span>
+                     <select class="form-input" style="width: 60px;">${daysOptions}</select>
+                   </div>
+                 `;
+               }
+             });
+           }
+        }
+      });
+    }
+
+    // --- Lógica de Validação Visual de Data/Hora (Tarefa) ---
+    const dateInput = document.getElementById('task-due-date');
+    const timeInput = document.getElementById('task-due-time');
+    const prioritySelect = document.getElementById('task-priority');
+
+    const validateDateTime = () => {
+      if (!dateInput) return;
+      
+      const dateVal = dateInput.value;
+      const timeVal = timeInput ? timeInput.value : '';
+      
+      // Remove classes anteriores
+      dateInput.classList.remove('input-error', 'input-warning');
+      if (timeInput) timeInput.classList.remove('input-error', 'input-warning');
+
+      if (!dateVal) return;
+
+      const now = new Date();
+      // Zera o horário da data atual para comparação apenas de data
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Cria a data do input (tratando fuso horário ou usando string split para evitar problemas)
+      const [y, m, d] = dateVal.split('-').map(Number);
+      const inputDate = new Date(y, m - 1, d);
+
+      if (inputDate < today) {
+        // Data anterior a hoje: Vermelho
+        dateInput.classList.add('input-error');
+        if (timeInput) timeInput.classList.add('input-error');
+      } else if (inputDate.getTime() === today.getTime()) {
+        // Data é hoje
+        if (timeVal) {
+          const [h, min] = timeVal.split(':').map(Number);
+          const inputTimeMinutes = h * 60 + min;
+          const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+
+          if (inputTimeMinutes < currentTimeMinutes) {
+            // Hora anterior a agora: Vermelho
+            dateInput.classList.add('input-error');
+            if (timeInput) timeInput.classList.add('input-error');
+          } else {
+            // Hora futura ou igual: Amarelo
+            dateInput.classList.add('input-warning');
+            if (timeInput) timeInput.classList.add('input-warning');
+          }
+        } else {
+          // Sem hora definida hoje: Amarelo
+          dateInput.classList.add('input-warning');
+          if (timeInput) timeInput.classList.add('input-warning');
+        }
+      }
+    };
+
+    // --- Lógica de Gradiente de Prioridade ---
+    const updatePriorityColor = () => {
+      if (!prioritySelect) return;
+      const val = parseInt(prioritySelect.value, 10);
+      let r, g, b;
+      
+      // Definição das cores base (RGB)
+      const red = [255, 205, 210];   // 0: Vermelho Claro (#ffcdd2)
+      const blue = [227, 242, 253];  // 5: Azul Claro (#e3f2fd)
+      const green = [220, 237, 200]; // 10: Verde Claro (#dcedc8)
+
+      if (val <= 5) {
+        // Interpolação entre Vermelho (0) e Azul (5)
+        const ratio = val / 5;
+        r = Math.round(red[0] + (blue[0] - red[0]) * ratio);
+        g = Math.round(red[1] + (blue[1] - red[1]) * ratio);
+        b = Math.round(red[2] + (blue[2] - red[2]) * ratio);
+      } else {
+        // Interpolação entre Azul (5) e Verde (10)
+        const ratio = (val - 5) / 5;
+        r = Math.round(blue[0] + (green[0] - blue[0]) * ratio);
+        g = Math.round(blue[1] + (green[1] - blue[1]) * ratio);
+        b = Math.round(blue[2] + (green[2] - blue[2]) * ratio);
+      }
+      
+      prioritySelect.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    };
+
+    if (dateInput) {
+      dateInput.addEventListener('change', validateDateTime);
+      if (timeInput) timeInput.addEventListener('change', validateDateTime);
+      // Executa a validação inicial
+      validateDateTime();
+    }
+
+    if (prioritySelect) {
+      prioritySelect.addEventListener('change', updatePriorityColor);
+      updatePriorityColor(); // Executa na inicialização
+    }
   }; // fim da função abrirDetalheTarefa
 
   const exibirDetalhesSubtarefa = (subtaskId) => {
     const dynamicArea = document.getElementById('dynamic-content-area');
     if (!dynamicArea) return;
 
-    dynamicArea.style.display = 'block';
+    // Altera para 'contents' para que os filhos (Checklist e Docs) participem do flex container pai
+    dynamicArea.style.display = 'contents';
 
     // --- Simulação de dados para a subtarefa ---
     // Ordena documentos: Vencidos/próximos de vencer primeiro.
@@ -927,9 +1114,8 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
 
 
     dynamicArea.innerHTML = `
-      <div class="quadro-col-container">
         <!-- Quadro de Checklist -->
-        <div class="task-quadro">
+        <div class="task-quadro task-col-item">
           <div class="quadro-header">
             <h4>Checklist da Subtarefa #${subtaskId}</h4>
           </div>
@@ -941,7 +1127,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         </div>
 
         <!-- Quadro de Documentos da Subtarefa -->
-        <div class="task-quadro">
+        <div class="task-quadro task-col-item">
           <div class="quadro-header">
             <h4 class="${documentHeaderClass}">Documentos ${documentCounter}</h4>
             <button class="icon-btn" title="Adicionar Documento">+</button>
@@ -953,14 +1139,14 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
             if (doc.isMandatory) {
               // Se for obrigatório, verifica se está em dia ou se está pendente/vencido.
               if (doc.type === 'attached' && doc.days >= 0) {
-                nameClass = 'text-success'; // Verde: Obrigatório e em dia.
+                nameClass = 'text-success'; // Verde Escuro: Documento obrigatório em dia.
               } else {
-                nameClass = 'text-orange'; // Laranja: Obrigatório, mas pendente ou vencido.
+                nameClass = 'text-orange'; // Laranja: Documento obrigatório não anexado ou em atraso.
               }
-            } // Se não for obrigatório (isMandatory: false), a classe permanece vazia (cor padrão branca).
+            } // Se não for obrigatório (isMandatory: false), a classe permanece vazia (cor padrão preta).
             // --- Fim da Regra de Negócio ---
 
-            return `<li class="document-item" data-document-id="${doc.id}" data-type="${doc.type}">
+            return `<li class="document-item" data-document-id="${doc.id}" data-type="${doc.type}" title="Texto Vermelho ou verde: Documento Obrigatório. Texto preto = Documento não obrigatório.">
               <span class="${nameClass}">${doc.name}</span>
               <span class="item-status ${
                 doc.type === 'required' ? 'status-obrigatorio' :
@@ -971,16 +1157,12 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
           }).join('')}
           </ul>
         </div> 
-      </div>
 
       <!-- Quadro para detalhes do documento selecionado -->
-      <div id="dynamic-details-quadro" class="task-quadro" style="display: none;">
+      <div id="dynamic-details-quadro" class="task-quadro task-col-item" style="display: none;">
          <p class="placeholder-text">Selecione um documento acima para ver os detalhes.</p>
       </div>
     `;
-
-    // Força o recálculo da rolagem após exibir os detalhes da subtarefa.
-    forceScrollRecalculation();
   }
 
   /**
@@ -1031,15 +1213,16 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
           <h4>Detalhes do Documento #${documentId}</h4>
           <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
         </div>
-        <div class="document-details-content">
           <div class="document-form">
-            <div class="form-field">
-              <label for="doc-emission-date">Data de Emissão:</label>
-              <input type="date" id="doc-emission-date" class="form-input" value="2022-05-20">
-            </div>
-            <div class="form-field">
-              <label for="doc-expiry-date">Data de Validade:</label>
-              <input type="date" id="doc-expiry-date" class="form-input" value="2026-05-19">
+            <div class="document-form-row">
+              <div class="form-field">
+                <label for="doc-emission-date">Data de Emissão:</label>
+                <input type="date" id="doc-emission-date" class="form-input" value="2022-05-20">
+              </div>
+              <div class="form-field">
+                <label for="doc-expiry-date">Data de Validade:</label>
+                <input type="date" id="doc-expiry-date" class="form-input" value="2026-05-19">
+              </div>
             </div>
             <div class="form-field">
               <label for="doc-type">Tipo do Documento:</label>
@@ -1055,7 +1238,6 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
               <button class="page-header-btn">Adicionar Páginas</button>
             </div>
           </div>
-        </div>
       `;
     } else {
       // Se for 'required' ou 'optional', mostra um formulário para adicionar o documento.
@@ -1065,15 +1247,16 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
           <h4>Adicionar Documento: ${docName}</h4>
           <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
         </div>
-        <div class="document-details-content">
           <div class="document-form">
-            <div class="form-field">
-              <label for="doc-emission-date">Data de Emissão:</label>
-              <input type="date" id="doc-emission-date" class="form-input">
-            </div>
-            <div class="form-field">
-              <label for="doc-expiry-date">Data de Validade:</label>
-              <input type="date" id="doc-expiry-date" class="form-input">
+            <div class="document-form-row">
+              <div class="form-field">
+                <label for="doc-emission-date">Data de Emissão:</label>
+                <input type="date" id="doc-emission-date" class="form-input">
+              </div>
+              <div class="form-field">
+                <label for="doc-expiry-date">Data de Validade:</label>
+                <input type="date" id="doc-expiry-date" class="form-input">
+              </div>
             </div>
             <div class="form-field">
               <label for="doc-type">Tipo do Documento:</label>
@@ -1083,7 +1266,6 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
               <button class="page-header-btn">Adicionar Documento</button>
             </div>
           </div>
-        </div>
       `;
     } // fim do if (docType)
   }; // fim da função atualizarQuadroDocumento

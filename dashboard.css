@@ -1,10 +1,19 @@
 :root {
   --sidebar-width: 250px;
   --sidebar-width-collapsed: 80px;
-  --primary-bg: #041832;
-  --secondary-bg: #1354A5;
-  --text-color: #FFF;
-  --accent-color: #1875E8;
+  
+  --primary-bg: #192a56; /* Azul Profundo (Noite) */
+  --secondary-bg: #f0f4f8;
+  --content-bg: #ffffff;
+  
+  --text-color: #cfd8dc;
+  --text-color-hover: #ffffff;
+  --text-main: #333333;
+  
+  --accent-color: #ff7043; /* Laranja Pôr do Sol */
+  --accent-color-hover: #f4511e;
+  
+  --border-color: #dddddd;
 }
 
 * {
@@ -14,34 +23,47 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(#1354A5 0%, #041832 33.33%, #041832 66.67%, #01080E 100%);
-  color: var(--text-color);
-  transition: margin-left 0.3s ease;
-  height: 100vh;
-  overflow: hidden; /* Impede o scroll do body */
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--secondary-bg);
+  color: var(--text-main);
+  font-size: 16px; /* Fonte maior */
+  line-height: 1.42857143;
 }
 
-h1 {
-    font-family: 'Chakra Petch', sans-serif;
+/* Classe específica para o layout do painel (Dashboard) que previne scroll na janela */
+body.app-layout {
+  height: 100vh;
+  overflow: hidden;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+h1 { font-size: 30px; }
+h2 { font-size: 24px; }
 
 /* --- Estrutura Principal --- */
 #sidebar {
   height: 100%;
   width: var(--sidebar-width);
   position: fixed;
-  z-index: 2;
+  z-index: 1000;
   top: 0;
   left: 0;
   background-color: var(--primary-bg);
+  color: var(--text-color);
   transition: width 0.3s ease, transform 0.3s ease;
   white-space: nowrap;
-  border-right: 1px solid var(--accent-color);
-  /* Transforma a sidebar em um container flexível vertical */
   display: flex;
   flex-direction: column;
-  padding-top: 20px; /* Mantém o espaço no topo */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-x: hidden;
 }
 
 #main {
@@ -51,8 +73,7 @@ h1 {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  /* --- CORREÇÃO PARA SCROLL EM MOBILE (CHROME/ANDROID) --- */
-  /* Cria um novo contexto de empilhamento que ajuda a resolver bugs de rolagem com inércia em dispositivos móveis. */
+  background-color: var(--secondary-bg);
   position: relative;
 }
 
@@ -60,118 +81,204 @@ h1 {
   padding: 20px;
   flex-grow: 1;
   overflow-y: auto;
-  /* --- CORREÇÃO PARA SCROLL EM MOBILE --- */
-  /* Força a rolagem com "momentum" (inércia) em dispositivos touch, resolvendo bugs de scroll travado no Android/iOS. */
-  -webkit-overflow-scrolling: touch;
-  /* 1. Desativa a "âncora de rolagem" do navegador, que causa o travamento ao injetar conteúdo dinâmico.
-     Isso impede que o navegador tente "adivinhar" onde a rolagem deveria ficar, o que causa o bug. */
-  overflow-anchor: none;
+}
+
+/* --- Navegação --- */
+.sidebar-main-nav {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-top: 10px;
 }
 
 .nav-btn {
-  padding: 15px 25px;
+  padding: 15px 20px;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 14px;
   color: var(--text-color);
   display: flex;
   align-items: center;
-  gap: 15px;
-  transition: 0.2s;
+  gap: 10px;
+  transition: all 0.2s;
   background: none;
   border: none;
   width: 100%;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: left;
+  font-family: inherit;
 }
 
 .nav-btn:hover {
-  background-color: var(--accent-color);
+  background-color: #273c75;
+  color: var(--text-color-hover);
+  text-decoration: none;
 }
 
-/* Estilo para o botão de navegação ativo */
 .nav-btn.active {
-  background-color: var(--accent-color);
-  font-weight: 700;
+  background-color: #273c75;
+  color: var(--text-color-hover);
+  font-weight: bold;
+  border-left: 3px solid var(--accent-color);
 }
 
 .button-icon {
-  font-size: 24px;
-}
-
-/* Permite que a área principal de navegação role se o conteúdo for maior que o espaço */
-.sidebar-main-nav {
-  overflow-y: auto;
-}
-
-/* Estilo para o botão de logout, para fixá-lo embaixo */
-#logout-btn {
-  margin-top: auto; /* Mágica do Flexbox: empurra o botão para o final */
-  margin-bottom: 20px; /* Adiciona um respiro na parte de baixo */
-}
-
-/* --- Estilo Windows 8 para botões (Exemplo) --- */
-.tile-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
-.tile {
-  height: 120px;
-  background-color: var(--accent-color);
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* --- Alterações para Responsividade --- */
-  /* Remove a largura fixa e usa flexbox para se adaptar */
-  flex-grow: 1; /* Permite que o botão cresça para ocupar espaço */
-  flex-basis: 150px; /* Define um tamanho base. Em telas pequenas, ele pode encolher a partir daqui */
-  max-width: 200px; /* Impede que o botão fique muito largo em telas grandes */
-  /* --- Fim das Alterações --- */
-  border-radius: 16px;
-  font-size: 20px;
-  text-decoration: none;
-  transition: transform 0.2s;
+  font-size: 18px;
+  width: 24px;
   text-align: center;
 }
 
-.tile:hover {
-  transform: scale(1.05);
-  z-index: 1; /* Garante que o tile em hover fique por cima dos outros */
-  background-color: #2980b9;
+#logout-btn {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* --- Estilos para Accordion (Grupos Recolhíveis) --- */
-.accordion-container {
+/* --- Botões Gerais (Estilo Bootstrap/Modelo) --- */
+.page-header-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #AAAAAA; /* Cinza Padrão */
+  border-color: #AAAAAA;
+  transition: background-color 0.2s;
+}
+
+.page-header-btn:hover {
+  background-color: #999999;
+  border-color: #999999;
+  text-decoration: none;
+}
+
+/* Classe para botões importantes (Verde do Modelo) */
+.btn-important {
+  background-color: #61AE24 !important;
+  border-color: #61AE24 !important;
+}
+.btn-important:hover {
+  background-color: #4d8e1c !important;
+  border-color: #4d8e1c !important;
+  text-decoration: none;
+}
+
+.icon-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: #555;
+    height: 34px;
+    width: 34px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+}
+.icon-btn:hover {
+    background-color: #eee;
+}
+
+/* --- Tabelas (Estilo Limpo e Leve) --- */
+.table-container {
+  overflow-x: auto;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-top: 10px;
+  box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+
+.point-table {
   width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+  background-color: transparent;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.point-table th,
+.point-table td {
+  padding: 8px;
+  line-height: 1.42857143;
+  vertical-align: top;
+  border-top: 1px solid var(--border-color);
+  text-align: left;
+  color: #555;
+}
+
+.point-table th {
+  vertical-align: bottom;
+  border-bottom: 2px solid var(--border-color);
+  font-weight: bold;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* Linhas zebradas para facilitar leitura */
+.point-table tbody tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.point-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.point-table a {
+    color: #428bca;
+    text-decoration: none;
+}
+.point-table a:hover {
+    text-decoration: underline;
+}
+
+/* --- Accordion (Estilo Panel) --- */
+.accordion-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .accordion-group {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border: 1px solid var(--accent-color);
-  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0,0,0,.05);
 }
 
 .accordion-title {
-  padding: 15px 20px;
-  font-size: 20px;
-  font-weight: 700;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  list-style: none; /* Remove o marcador padrão do <summary> */
+  background-color: #f5f5f5;
+  color: #333;
+  border-bottom: 1px solid transparent;
+  list-style: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.accordion-group[open] .accordion-title {
+    border-bottom: 1px solid var(--border-color);
+}
+
 .accordion-title::after {
   content: '+';
-  font-size: 28px;
-  font-weight: 400;
+  font-size: 18px;
+  color: #777;
 }
 
 .accordion-group[open] > .accordion-title::after {
@@ -179,289 +286,343 @@ h1 {
 }
 
 .accordion-title::-webkit-details-marker {
-  display: none; /* Remove o marcador padrão no Chrome/Safari */
+  display: none;
 }
 
 .accordion-content {
-  padding: 20px;
-  border-top: 1px solid var(--accent-color);
-  /* Permite que o conteúdo cresça e o memo se expanda */
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  /* --- CORREÇÃO PARA SCROLL EM MOBILE (BUG DE RENDERIZAÇÃO) --- */
-  /* Força a promoção do conteúdo para sua própria camada de composição,
-     resolvendo bugs de cálculo de layout e rolagem ao abrir/fechar accordions. */
-  transform: translateZ(0);
-  /* Adiciona uma otimização extra para navegadores que suportam will-change,
-     informando que a transformação (GPU) e o conteúdo podem mudar. */
-  will-change: transform, contents;
-}
-
-/* --- Estilos para Navegador de Mês e Tabela --- */
-.month-navigator {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap; /* Permite que os itens quebrem a linha */
-}
-
-.month-nav-controls {
-  display: flex;
-  justify-content: center;
-  flex-grow: 1;
-  gap: 10px;
-}
-
-.month-nav-btn {
-  background: none;
-  border: 1px solid var(--accent-color);
-  color: var(--text-color);
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  white-space: nowrap; /* Impede que o texto quebre em duas linhas */
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.month-nav-btn:hover {
-  background-color: var(--accent-color);
-}
-
-#current-month-display {
-  font-size: 18px;
-  font-weight: 700;
-  text-align: left; /* Alinha o texto à esquerda agora */
-}
-
-/* Ajusta a altura do seletor de funcionário para alinhar com os botões */
-.month-navigator .form-input {
-  height: 42px; 
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-/* Container para agrupar um input com um botão */
-.input-with-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.input-with-button .form-input {
-  flex-grow: 1; /* Faz o select ocupar o espaço disponível */
-}
-
-/* Estilo para botões que contêm apenas um ícone */
-.icon-btn {
-  background: none;
-  border: 1px solid var(--accent-color);
-  color: var(--text-color);
-  height: 42px;
-  width: 42px;
-  border-radius: 8px;
-  font-size: 22px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  flex-shrink: 0; /* Impede que o botão encolha */
-}
-
-/* Adiciona rolagem horizontal para a tabela em telas pequenas */
-.table-container {
+  padding: 15px;
+  background-color: #fff;
   overflow-x: auto;
-
-  /* --- CORREÇÃO DEFINITIVA PARA SCROLL EM MOBILE (BASEADO EM ANÁLISE TÉCNICA) --- */
-  /* 1. Desativa a "âncora de rolagem" do navegador, que pode causar o travamento ao injetar conteúdo dinâmico. */
-  overflow-anchor: none;
-  /* 2. Permite que o navegador gerencie gestos de rolagem tanto na vertical (pan-y) quanto na horizontal (pan-x) dentro deste contêiner.
-     Isso é essencial para que a rolagem lateral da tabela e a rolagem vertical da página funcionem juntas no Android. */
-  touch-action: pan-x pan-y;
-  /* 3. Promove este contêiner para sua própria camada de composição (GPU), garantindo rolagem fluida e desacoplada. */
-  will-change: scroll-position;
-  /* 4. Garante a rolagem com inércia ("momentum") no iOS. */
-  -webkit-overflow-scrolling: touch;
-  /* 5. Otimização extra: Aplica o hack de aceleração por GPU para garantir que a rolagem horizontal
-     seja processada de forma independente, evitando conflito com a rolagem vertical da página. */
-  transform: translateZ(0);
 }
 
-.point-table {
-  /* width: 100%; -- REMOVIDO: Esta propriedade causa o encolhimento da tabela em mobile. */
-  /* min-width: 800px; -- ADICIONADO: Força a tabela a ter uma largura mínima, ativando o scroll horizontal
-     no container e impedindo que as colunas sejam espremidas no Android. */
-  min-width: 700px; /* Reduzido para a tabela não ficar excessivamente larga */
-  border-collapse: collapse;
-  margin-top: 10px;
-  /* 5. Força o navegador a usar um algoritmo de renderização rápido.
-     Isso é crucial para o desempenho e para evitar bugs de renderização, pois o layout
-     das colunas é calculado com base nos cabeçalhos e nas larguras definidas, não no conteúdo inteiro. */
-  table-layout: fixed;
-}
-
-.point-table th,
-.point-table td {
-  border: 1px solid var(--accent-color);
-  padding: 12px;
-  text-align: center;
-}
-
-.point-table th {
-  background-color: rgba(0, 0, 0, 0.3);
-  font-size: 16px;
-}
-
-.point-table td {
+/* --- Inputs e Formulários --- */
+.form-input, .container__input {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px;
   font-size: 14px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #e3f2fd; /* Azul claro (Fim de tarde) */
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 
-/* --- Estilos para Largura Mínima das Colunas das Tabelas --- */
-.col-action { min-width: 60px; }
-.col-date, .col-data { min-width: 110px; }
-.col-time { min-width: 90px; }
-.col-ho { min-width: 90px; }
-.col-obs { min-width: 200px; }
-
-/* Novas classes para as tabelas de tarefas */
-.col-nome { min-width: 150px; }
-.col-endereco { min-width: 250px; }
-.col-tipo { min-width: 120px; }
-.col-relacao { min-width: 150px; }
-.col-codigo { min-width: 100px; }
-.col-titulo { min-width: 250px; }
-.col-prioridade-icon {
-  min-width: 60px;
-  font-size: 24px; /* Aumenta o tamanho do ícone */
+.form-input:focus, .container__input:focus {
+  border-color: #66afe9;
+  outline: 0;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 }
 
-.point-table .ho-sim {
-  color: #ff5252; /* Vermelho claro para boa legibilidade */
-  font-weight: 700;
+/* Validação Visual de Inputs */
+.form-input.input-error {
+  background-color: #ffcdd2; /* Vermelho Claro */
+  border-color: #e57373;
 }
 
-.point-table .ho-nao {
-  color: #90ee90; /* Verde claro para boa legibilidade */
-  font-weight: 700;
+.form-input.input-warning {
+  background-color: #fff9c4; /* Amarelo Claro */
+  border-color: #fff59d;
 }
 
-.table-action-btn {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  font-size: 20px;
-  padding: 5px;
-  transition: transform 0.2s, color 0.2s;
-}
-
-.table-action-btn:hover {
-  transform: scale(1.2);
-  color: var(--accent-color);
-}
-
-/* --- Estilos para Formulários dentro do Accordion --- */
 .form-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end; /* Alinha os itens na base */
-  gap: 20px;
-  flex-wrap: wrap; /* Permite quebrar a linha em telas menores */
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-end;
 }
 
 .form-inputs-group {
-  display: flex;
-  gap: 10px;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
 }
 
-.time-control-group {
+/* --- Tiles (Botões Grandes) --- */
+.tile-container {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.tile {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 150px;
+    min-height: 100px;
+}
+
+.tile:hover {
+    background-color: #f9f9f9;
+    border-color: #adadad;
+    text-decoration: none;
+    transform: none;
+}
+
+/* --- Page Header --- */
+.page-header {
+    padding-bottom: 9px;
+    margin: 20px 0 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-menu-toggle-btn {
+    background: none;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: none;
+}
+.page-menu-toggle-btn:hover {
+    background-color: #eee;
+}
+
+@media (max-width: 768px) {
+    /* Exibe o botão por padrão no mobile (menu oculto) */
+    .page-menu-toggle-btn { display: block; }
+    /* Oculta o botão quando o menu estiver aberto no mobile */
+    body.sidebar-open .page-menu-toggle-btn { display: none; }
+}
+
+/* --- Search Controls --- */
+.search-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.search-controls .form-input {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .search-controls {
+        flex-direction: column;
+    }
+    .search-controls .form-input, 
+    .search-controls button,
+    .search-controls .page-header-btn {
+        width: 100%;
+        flex: none;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+}
+
+/* --- Task Specifics --- */
+.task-quadro {
+    background-color: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.quadro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+.quadro-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.item-list-container {
+    list-style: none;
+    padding: 0;
+}
+.subtask-item, .document-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.subtask-item:hover, .document-item:hover {
+    background-color: #f5f5f5;
+}
+.subtask-item.selected, .document-item.selected {
+    border-left: 4px solid var(--accent-color);
+    background-color: #f0f2f7;
+}
+
+.item-status {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+    font-weight: bold;
+}
+.status-pending { background-color: #999; }
+.status-completed { background-color: #5cb85c; }
+.status-warning { background-color: #f0ad4e; }
+.status-expired { background-color: #d9534f; }
+
+/* --- Task Header Controls --- */
+.task-header-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.task-header-controls .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 170px; /* Largura fixa alinhada com o título 'Data de Conclusão' */
+}
+
+/* --- Configurações de Repetição de Tarefa --- */
+.repeat-settings-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 2px;
+    flex: 1; /* Ocupa o espaço restante na linha se houver */
+    min-width: 280px; /* Garante espaço suficiente para as opções */
+    margin-top: 5px;
+}
+
+.week-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.week-day-opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+}
+.week-day-opt input {
+    margin: 0 0 3px 0;
+}
+
+.monthly-selector, .custom-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.monthly-row, .custom-row, .periodic-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+/* --- Month Navigator --- */
+.month-navigator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.month-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.month-nav-btn {
+    background: #005596; /* Azul do Modelo */
+    border: 1px solid #005596;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.month-nav-btn:hover { background-color: #004478; border-color: #004478; }
+
+/* --- Date/Time Wrapper (Bater Ponto) --- */
+.date-time-wrapper {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+}
+
+/* Define um tamanho fixo e compacto para a data e para o grupo de hora */
+.compact-input,
+.compact-input-group {
+    width: 240px; /* Tamanho suficiente para data e hora+botões */
+    max-width: 100%; /* Garante responsividade */
+}
+
+/* --- Time Adjust --- */
+.time-control-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.time-control-group .form-input {
+    flex: 1; /* Faz o input de hora ocupar o espaço restante dentro dos 240px */
 }
 
 .time-adjust-btn {
-  height: 50px;
-  width: 50px;
-  border-radius: 8px;
-  border: 1px solid var(--accent-color);
-  background-color: var(--primary-bg);
-  color: var(--text-color);
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
+    background: #005596; /* Azul do Modelo */
+    border: 1px solid #005596;
+    color: #fff;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    min-width: 30px;
 }
-
-.time-adjust-btn:hover {
-  background-color: var(--accent-color);
-}
-
-.form-input {
-  padding: 10px 15px;
-  height: 50px;
-  border-radius: 8px;
-  border: 1px solid var(--accent-color);
-  background-color: var(--primary-bg);
-  color: var(--text-color);
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-}
-
-/* Estilos para a barra de busca */
-.search-controls {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap; /* Permite que os botões quebrem para a próxima linha */
-  margin-bottom: 20px;
-}
-
-.search-controls .form-input[type="text"] {
-  flex-grow: 1; /* Faz o campo de texto ocupar o espaço disponível */
-}
-
-/* Estilos para as etapas da busca */
-.search-step {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(24, 117, 232, 0.3);
-}
-
-.point-table .selectable-row:hover {
-  cursor: pointer;
-  background-color: rgba(24, 117, 232, 0.3);
-}
-
-
-/* Ajusta o botão 'tile' quando dentro de um form-container */
-.form-container .tile {
-  /* Remove a altura específica para herdar do .tile padrão (120px) */
-  /* Mantém um tamanho menor para o texto e padding horizontal */
-  padding: 0 30px;
-  font-size: 16px;
-}
-
-/* Grupo de Ação do Formulário (botão + checkbox) */
-.form-action-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-}
-
-.checkbox-container input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-}
+.time-adjust-btn:hover { background-color: #004478; border-color: #004478; }
 
 /* --- ESTADOS DA SIDEBAR --- */
 
@@ -496,17 +657,6 @@ body.sidebar-collapsed .nav-btn {
   #main {
     margin-left: 0;
   }
-  
-  /* Empilha os controles do navegador de mês em telas pequenas */
-  .month-navigator {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  /* Empilha os controles de busca em telas pequenas */
-  .search-controls {
-    flex-direction: column;
-  }
 
   /* 3. Estado Aberto (Mobile) - Ao clicar no botão */
   body.sidebar-open #sidebar {
@@ -514,494 +664,159 @@ body.sidebar-collapsed .nav-btn {
   }
 }
 
-/* --- Estilos para Páginas com Sidebar Própria (Ex: Tarefas) --- */
-.page-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* Ajusta o botão de nova tarefa para ter largura automática */
-#new-task-btn {
-  width: auto;
-  padding: 0 20px;
-}
-
-.page-header {
+/* --- Layout de Colunas de Tarefas (Subtarefas/Checklist/Docs) --- */
+.task-columns-wrapper {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-title-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-/* Container para colocar quadros lado a lado */
-.quadro-col-container {
-  display: flex;
-  gap: 20px;
-}
-
-/* Cada quadro dentro do container de colunas ocupa metade do espaço */
-.quadro-col-container .task-quadro {
-  flex: 1;
-  min-width: 0; /* Necessário para o flexbox funcionar corretamente */
-}
-
-/* --- Estilos para Cabeçalho da Tarefa (Data/Prioridade) --- */
-.task-header-controls {
-  display: flex;
-  gap: 20px;
   flex-wrap: wrap;
-  background-color: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(24, 117, 232, 0.5);
-  border-radius: 8px;
-  padding: 15px;
+  gap: 15px;
+  align-items: flex-start; /* Alinha os quadros no topo */
 }
 
-.task-header-controls .form-field {
-  flex: 1;
+.task-col-item {
+  flex: 1 1 50ch; /* Largura base de ~50 caracteres */
+  min-width: 300px; /* Largura mínima para evitar esmagamento em telas muito pequenas */
+  max-width: 100%;
 }
 
-/* --- Estilos para Detalhes da Tarefa Selecionada --- */
-.task-details-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* Ajuste do Memo */
+.memo-area {
+  width: 100%;
+  height: 240px; /* Altura fixa de ~10 linhas (considerando fonte 16px e padding) */
+  resize: none; /* Impede redimensionamento manual pelo usuário */
+  overflow-y: auto; /* Adiciona barra de rolagem vertical se o texto exceder a altura */
 }
 
-.task-quadro {
-  background-color: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(24, 117, 232, 0.5);
-  border-radius: 8px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.quadro-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(24, 117, 232, 0.3);
-}
-
-/* Estilos para o header colapsável de Subtarefas/Documentos */
-/* .task-quadro .quadro-header {
-  cursor: pointer; // Removido, pois não é mais colapsável por padrão
-  position: relative;
-} */
-
-
-.quadro-header h4 {
-  font-size: 18px;
-  color: var(--text-color);
-}
-
-.quadro-header .icon-btn {
-  height: 32px;
-  width: 32px;
-  font-size: 16px;
-}
-
-.item-list-container {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.subtask-item,
-.document-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-left: 4px solid transparent;
-}
-
-.subtask-item:hover,
-.document-item:hover {
-  background-color: rgba(24, 117, 232, 0.3);
-}
-
-.subtask-item.selected,
-.document-item.selected {
-  background-color: rgba(24, 117, 232, 0.4);
-  border-left: 4px solid var(--accent-color);
-}
-
-.point-table tr.selected {
-  background-color: rgba(24, 117, 232, 0.4);
-  border: 1px solid var(--accent-color);
-}
-
-.item-status {
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* Cores de Status */
-.status-pending {
-  background-color: #6f6f70; /* Cinza */
-}
-.status-completed {
-  background-color: #28a745; /* Verde */
-}
-.status-valid {
-  background-color: #28a745; /* Verde */
-}
-.status-warning {
-  background-color: #ffc107; /* Amarelo */
-  color: #333;
-}
-.status-expired {
-  background-color: #dc3545; /* Vermelho */
-}
-.status-obrigatorio {
-  background-color: #dc3545; /* Vermelho */
-}
-.status-opcional {
-  background-color: #f8f9fa; /* Branco */
-  color: #333;
-  border: 1px solid #ccc;
-}
-
-/* --- Estilos para Checklist e Detalhes de Documento --- */
-.checklist-container {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.checklist-container li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
-.checklist-container li label {
-  /* Garante que o texto do item ocupe o espaço disponível, empurrando o botão para o final */
-  flex-grow: 1;
-  text-align: left;
-}
-
-.checklist-container input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-}
-
-.placeholder-text {
-  color: #aaa;
-  font-style: italic;
-  text-align: center;
-  padding: 20px;
-}
-
-.document-details-content {
-  display: flex;
-  gap: 20px;
-}
-
+/* --- Layout do Formulário de Documentos --- */
 .document-form {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding: 10px 0;
 }
 
-.form-field {
+.document-form-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.document-form-row .form-field {
+  flex: 1;
+  min-width: 200px; /* Garante que empilhe em telas pequenas */
+}
+
+.document-form .form-field {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.form-field label {
+.document-form .form-field label {
+  font-weight: bold;
   font-size: 14px;
-  font-weight: 700;
 }
 
 .document-actions {
   display: flex;
-  gap: 10px;
-  margin-top: auto; /* Empurra os botões para baixo */
-  padding-top: 15px;
+  justify-content: flex-end; /* Alinha o botão à direita (em baixo de tudo) */
 }
 
-.document-form .document-actions {
-  align-self: flex-end; /* Alinha o próprio container de botões à direita */
-  width: auto;
+/* --- Estilos Específicos da Tela de Login --- */
+body.login-layout {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-bg);
 }
 
-.document-actions .page-header-btn {
-  flex: 1;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-.table-action-btn.btn-danger-icon:hover {
-  color: #dc3545;
-}
-
-
-
-.document-thumbnails {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: flex-start;
-  flex-basis: 220px; /* Largura base para a área de miniaturas */
-}
-
-.document-files-table {
-  margin-top: 15px;
-}
-
-.document-files-table .point-table th,
-.document-files-table .point-table td {
-  padding: 8px;
-}
-
-.file-row-layout {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.file-link {
-  color: var(--text-color);
-  text-decoration: underline;
-  flex-grow: 1;
-  text-align: left;
-  padding: 0 15px;
-}
-
-.text-danger {
-  color: #dc3545; /* Vermelho */
-  font-weight: 700;
-}
-
-.text-orange {
-  color: #fd7e14; /* Laranja */
-}
-
-.text-success {
-  color: #28a745; /* Verde */
-}
-
-.status-completed-header {
-  color: #28a745; /* Verde */
-  font-weight: 700;
-}
-
-.log-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 300px; /* Limita a altura e adiciona scroll se necessário */
-  overflow-y: auto;
-}
-
-.log-item {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
-  line-height: 1.4;
-  color: #ccc;
-}
-
-.page-header-btn {
-  background: var(--accent-color);
-  border: 1px solid var(--accent-color);
-  color: var(--text-color);
-  border-radius: 8px;
-  height: 40px;
-  width: auto; /* Largura automática por padrão */
-  padding: 0 20px; /* Espaçamento para botões com texto */
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.page-header-btn:hover {
-  background-color: #00BFFF; /* Ciano (DeepSkyBlue) */
-  border-color: #00BFFF;
-}
-
-/* Garante que o botão de menu (ícone) continue quadrado */
-#task-sidebar-toggle {
-  width: 40px;
-  padding: 0;
-  font-size: 20px;
-}
-
-.page-menu-toggle-btn {
-  display: none; /* Oculto por padrão */
-  width: 40px;
-  padding: 0;
-  font-size: 20px;
-  margin-right: 15px;
-}
-
-/* Exibe o botão de menu em telas grandes QUANDO a sidebar está recolhida */
-body.sidebar-collapsed .page-menu-toggle-btn {
-  display: block;
-}
-
-/* Exibe o botão de menu em telas pequenas (onde a sidebar pode ser ocultada) */
-@media (max-width: 768px) {
-  .page-menu-toggle-btn {
-    display: block;
-  }
-
-  /* Empilha os quadros de subtarefas e documentos */
-  .quadro-col-container {
+.container {
+    width: 400px;
+    background-color: #fff;
+    border-radius: 15px;
+    border: 7px solid rgba(255, 255, 255, 0.31);
+    box-shadow: 0 0 12px #999;
+    padding: 20px;
+    background-clip: padding-box;
+    display: flex;
     flex-direction: column;
-  }
+    align-items: center;
 }
 
-#task-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 100%;
-  background-color: var(--primary-bg);
-  border-left: 1px solid var(--accent-color);
-  padding: 20px;
-  transform: translateX(100%); /* Começa oculta */
-  transition: transform 0.3s ease;
-  z-index: 900; /* Fica abaixo do menu principal mas acima do conteúdo */
+.container__conteudo {
+    width: 100%;
 }
 
-/* Estado aberto da sidebar de tarefas */
-.task-sidebar-open #task-sidebar {
-  transform: translateX(0);
+.container__informacoes {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
 }
 
-/* Ajusta o conteúdo principal quando a sidebar de tarefas está aberta */
-.task-sidebar-open .page-main-content {
-  transition: margin-right 0.3s ease;
-  margin-right: 300px;
+body.login-layout h1 {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
-@media (max-width: 1024px) {
-  .task-sidebar-open .page-main-content {
-    margin-right: 0; /* Em telas menores, a sidebar flutua sobre o conteúdo */
-  }
+.texto__paragrafo {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-/* --- Estilos para o Modal de Instruções --- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: none; /* Oculto por padrão */
-  justify-content: center;
-  align-items: center;
-  z-index: 2000; /* Fica acima de todo o resto */
-  padding: 20px;
+.container__campo {
+    margin-bottom: 15px;
+    text-align: left;
 }
 
-.modal-container {
-  background-color: var(--primary-bg);
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--accent-color);
-  width: 100%;
-  max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.container__campo label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 13px;
+    color: #333;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(24, 117, 232, 0.3);
-  padding-bottom: 10px;
+.container__botoes {
+    margin-top: 20px;
 }
 
-.modal-content {
-  line-height: 1.6;
-  font-size: 16px;
+.container__botao {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33;
+    border-radius: 6px;
+    color: #fff;
+    background-color: #61AE24; /* Verde do Modelo */
+    border-color: #61AE24;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-weight: normal;
+    text-align: center;
+    transition: background-color 0.2s;
 }
 
-.modal-content a {
-  color: var(--accent-color);
-  text-decoration: underline;
+.container__botao:hover {
+    background-color: #4d8e1c;
+    border-color: #4d8e1c;
 }
 
-/* Ajusta botões de navegação dentro da sidebar de tarefas */
-#task-sidebar .nav-btn {
-  justify-content: flex-start;
+.container__botao:disabled {
+    background-color: #c7cbd6;
+    border-color: #b8bdcb;
+    cursor: not-allowed;
 }
 
-/* --- Estilos para Cabeçalho de Processos --- */
-.process-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--accent-color);
+.container__imagem-pessoa {
+    display: none;
 }
 
-.breadcrumb {
-  font-size: 22px;
-}
-
-.breadcrumb span {
-  color: var(--accent-color);
-  margin: 0 5px;
-}
-
-/* --- Estilos para a área de Resumo/Memo --- */
-.memo-container {
-  /* Faz este container ocupar todo o espaço vertical restante */
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-}
-
-.memo-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.memo-area {
-  flex-grow: 1; /* Faz o textarea preencher o espaço do memo-container */
-  resize: none; /* Impede que o usuário redimensione manualmente */
-  min-height: 240px; /* Garante uma altura mínima de ~10-12 linhas */
+@media screen and (max-width: 480px) {
+    .container {
+        width: 90%;
+    }
 }

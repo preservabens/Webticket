@@ -16,11 +16,13 @@
       <br>
       <div class="form-container">
         <div class="form-inputs-group">
-          <input type="date" id="ponto-date" class="form-input" />
-          <div class="time-control-group">
-            <input type="time" id="ponto-time" class="form-input" />
-            <button type="button" class="time-adjust-btn" data-adjust="-1">-1</button>
-            <button type="button" class="time-adjust-btn" data-adjust="-5">-5</button>
+          <div class="date-time-wrapper">
+            <input type="date" id="ponto-date" class="form-input compact-input" />
+            <div class="time-control-group compact-input-group">
+              <input type="time" id="ponto-time" class="form-input" />
+              <button type="button" class="time-adjust-btn" data-adjust="-1">-1</button>
+              <button type="button" class="time-adjust-btn" data-adjust="-5">-5</button>
+            </div>
           </div>
           <input type="text" id="ponto-obs" class="form-input" placeholder="Observações (opcional)" />
         </div>
@@ -29,7 +31,7 @@
             <input type="checkbox" id="home-office-check" />
             <label for="home-office-check">Home Office</label>
           </div>
-          <button type="button" class="tile">Registrar Ponto<br>Entrada/Saida</button>
+          <button type="button" class="page-header-btn" id="btn-registrar-ponto">Registrar Ponto</button>
         </div>
       </div>
     </div>
@@ -40,7 +42,10 @@
     <summary class="accordion-title">Meu Espelho de Ponto</summary>
     <div class="accordion-content">
       <div class="month-navigator">
-        <h3 id="current-month-display">-- / ----</h3>
+        <div class="month-title-group">
+          <h3 id="current-month-display">-- / ----</h3>
+          <button type="button" id="print-report-btn" class="icon-btn" title="Imprimir Relatório em PDF">🖨️</button>
+        </div>
         <div class="month-nav-controls">
           <button type="button" id="prev-month-btn" class="month-nav-btn">&lt;</button>
           <button type="button" id="next-month-btn" class="month-nav-btn">&gt;</button>
@@ -58,7 +63,6 @@
               <option>Colaborador 02</option>
               <option>Colaborador 03</option>
             </select>
-            <button type="button" id="print-report-btn" class="icon-btn" title="Imprimir Relatório em PDF">🖨️</button>
           </div>
         </div>
       </div>
