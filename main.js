@@ -107,6 +107,17 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
       // Alterna (abre/fecha) o grupo clicado
       currentGroup.toggleAttribute('open');
+
+      // FIX: Força o recálculo de layout (Reflow) para evitar travamentos no Android
+      void document.body.offsetHeight;
+    }
+
+    // FIX: Força recálculo ao clicar em itens expansíveis da busca (Android)
+    if (event.target.closest('summary')) {
+        // Pequeno delay para garantir que o navegador processou a abertura nativa
+        setTimeout(() => {
+            void document.body.offsetHeight;
+        }, 50);
     }
 
     // Verifica se o clique foi no botão de editar/salvar o memo da tarefa
@@ -1170,6 +1181,11 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
             </select>
           </div>
 
+          <!-- 5. Configurações Dinâmicas de Repetição -->
+          <div id="repeat-settings-wrapper" class="repeat-settings-wrapper" style="display: none;">
+             <!-- Conteúdo injetado via JS -->
+          </div>
+
           <!-- Novo Campo Ticket -->
           <div class="form-field" style="width: 120px;">
             <label for="task-ticket-type">Ticket:</label>
@@ -1183,11 +1199,6 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
           <div class="form-field" style="justify-content: flex-end;">
             <label>&nbsp;</label> <!-- Espaçador -->
             <button class="${completeBtnClass}" style="${completeBtnStyle}" ${completeBtnDisabled} title="${completeBtnTitle}" onclick="alert('Tarefa Concluída com Sucesso!')">Concluir Tarefa</button>
-          </div>
-
-          <!-- 5. Configurações Dinâmicas de Repetição -->
-          <div id="repeat-settings-wrapper" class="repeat-settings-wrapper" style="display: none;">
-             <!-- Conteúdo injetado via JS -->
           </div>
         </div>
 
@@ -1341,7 +1352,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
             <h4>Adicionar Movimentação</h4>
           </div>
           <textarea id="movement-memo-input" class="form-input memo-area" rows="10" placeholder="Digite aqui uma nova informação, comentário ou atualização sobre a tarefa..."></textarea>
-          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; align-items: center;">
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
             <select id="movement-visibility" class="form-input" style="width: auto;">
                 <option value="internal">Interno</option>
                 <option value="public">Visível para o Cliente</option>
@@ -1766,6 +1777,15 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     const documentHeaderClass = totalMandatoryCount > 0 && attachedAndValidMandatoryCount === totalMandatoryCount ? 'status-completed-header' : 'text-danger';
     // --- Fim das Regras de Negócio ---
 
+    // --- Simulação de estado dos checklists ---
+    // Subtarefa 2 (Agendar Vistoria): Todos marcados (3 itens)
+    // Subtarefa 1 (Verificar Doc): Apenas 1 marcado
+    const isSubtask2 = subtaskId.toString() === '2';
+    const isSubtask1 = subtaskId.toString() === '1';
+    
+    const chk1Checked = (isSubtask1 || isSubtask2) ? 'checked' : '';
+    const chk2Checked = (isSubtask2) ? 'checked' : '';
+    const chk3Checked = (isSubtask2) ? 'checked' : '';
 
     dynamicArea.innerHTML = `
         <!-- Quadro de Checklist -->
@@ -1774,9 +1794,9 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
             <h4>Checklist da Subtarefa #${subtaskId}</h4>
           </div>
           <ul class="checklist-container">
-            <li><input type="checkbox" id="chk1" checked> <label for="chk1">Item 1 do checklist (ex: Cópia do RG)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
-            <li><input type="checkbox" id="chk2"> <label for="chk2">Item 2 do checklist (ex: Comprovante de Renda)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
-            <li><input type="checkbox" id="chk3"> <label for="chk3">Item 3 do checklist (ex: Análise de Crédito)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+            <li><input type="checkbox" id="chk1" ${chk1Checked}> <label for="chk1">Item 1 do checklist (ex: Cópia do RG)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+            <li><input type="checkbox" id="chk2" ${chk2Checked}> <label for="chk2">Item 2 do checklist (ex: Comprovante de Renda)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
+            <li><input type="checkbox" id="chk3" ${chk3Checked}> <label for="chk3">Item 3 do checklist (ex: Análise de Crédito)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
           </ul>
         </div>
 
