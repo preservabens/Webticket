@@ -548,6 +548,68 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
     // Atualiza o display do mês no espelho de ponto
     updateMonthDisplay();
+
+    // --- GERAÇÃO DE DADOS MOCKADOS (35 PONTOS) ---
+    const table = document.querySelector('.point-table');
+    if (table) {
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
+
+      // Atualiza o cabeçalho para o formato solicitado
+      if (thead) {
+        thead.innerHTML = `
+          <tr>
+            <th style="width: 50px; text-align: center;">Ação</th>
+            <th>Data</th>
+            <th>Entrada</th>
+            <th>Saída</th>
+            <th>Total</th>
+            <th>Home Office</th>
+            <th>Observações</th>
+          </tr>
+        `;
+      }
+
+      const entries = [];
+      let count = 0;
+      let currentDate = new Date();
+      
+      while (count < 35) {
+        // Pula fim de semana
+        if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+          const dateStr = currentDate.toLocaleDateString('pt-BR');
+          
+          // Tarde
+          // Define dois registros como Home Office (ex: índices 2 e 14)
+          const hoTarde = (count === 2 || count === 14) ? 'Sim' : 'Não';
+          entries.push({ date: dateStr, entrada: '14:00', saida: '18:00', total: '04:00', homeOffice: hoTarde, obs: 'Normal' });
+          count++;
+          if (count >= 35) break;
+          
+          // Manhã
+          entries.push({ date: dateStr, entrada: '08:00', saida: '12:00', total: '04:00', homeOffice: 'Não', obs: 'Normal' });
+          count++;
+        }
+        // Volta um dia
+        currentDate.setDate(currentDate.getDate() - 1);
+      }
+
+      if (tbody) {
+        tbody.innerHTML = entries.map(e => {
+        const hoStyle = e.homeOffice === 'Sim' ? 'color: red;' : '';
+        return `
+        <tr>
+          <td style="text-align: center;"><button class="table-action-btn" title="Editar">✏️</button></td>
+          <td>${e.date}</td>
+          <td>${e.entrada}</td>
+          <td>${e.saida}</td>
+          <td>${e.total}</td>
+          <td style="${hoStyle}">${e.homeOffice}</td>
+          <td>${e.obs}</td>
+        </tr>
+        `}).join('');
+      }
+    }
   };
 
   // Função para atualizar o display de mês/ano
