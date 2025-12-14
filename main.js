@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
   // Mantém o controle do estado atual da visualização para detectar mudanças
   let isMobileView = window.innerWidth <= 768;
 
+  // Variável global para passar dados da tarefa selecionada entre páginas (Busca -> Tarefas)
+  window.selectedTaskData = null;
+
+  // Variável global para passar o ID do processo selecionado para o editor
+  window.currentProcessId = null;
+  window.currentProcessName = null;
+
   // --- CRIAÇÃO DINÂMICA DO MODAL DE INSTRUÇÕES ---
   // Cria os elementos do modal uma única vez e anexa ao body.
   const modalOverlay = document.createElement('div');
@@ -26,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     </div>
   `;
   body.appendChild(modalOverlay);
+
+  // --- CRIAÇÃO DO BOTÃO DE AJUDA GLOBAL ---
+  const globalHelpBtn = document.createElement('div');
+  globalHelpBtn.className = 'global-help-btn';
+  globalHelpBtn.innerHTML = '?';
+  globalHelpBtn.title = 'Manual do Sistema';
+  globalHelpBtn.addEventListener('click', () => {
+      alert('Abrir Manual do Sistema (Simulação).');
+  });
+  body.appendChild(globalHelpBtn);
+
 
   // --- LÓGICA PARA FECHAR O MODAL ---
   const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -124,6 +142,52 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       alert('Este botão irá abrir uma janela para selecionar o tipo do chamado e alterar o nome.');
     } // fim do if (edit-task-title-btn)
 
+    // Verifica se o clique foi no botão de Configurações do Documento (Engrenagem)
+    const docSettingsBtn = event.target.closest('#doc-settings-btn');
+    if (docSettingsBtn) {
+      const docId = docSettingsBtn.dataset.docId;
+      renderDocumentSettings(docId);
+    }
+
+    // Verifica se o clique foi no botão de Adicionar Documento (+)
+    const addDocBtn = event.target.closest('#add-document-btn');
+    if (addDocBtn) {
+      renderDocumentSettings(null); // null indica modo de adição
+    }
+
+    // Verifica se o clique foi no botão de Excluir Documento (Lixeira)
+    const deleteDocBtn = event.target.closest('#delete-document-btn');
+    if (deleteDocBtn) {
+      if (confirm('Tem certeza que deseja excluir este documento da tarefa?')) {
+        alert('Simulação: Documento excluído com sucesso.');
+        // Aqui fecharia o quadro ou recarregaria a lista
+        document.getElementById('dynamic-details-quadro').style.display = 'none';
+      }
+    }
+
+    // Verifica se o clique foi no botão de fechar o quadro dinâmico
+    const closeDynamicQuadroBtn = event.target.closest('.close-dynamic-quadro-btn');
+    if (closeDynamicQuadroBtn) {
+      // Verifica se deve voltar para a visualização anterior (ex: Configurações -> Detalhes)
+      if (closeDynamicQuadroBtn.dataset.backTo) {
+        atualizarQuadroDocumento(closeDynamicQuadroBtn.dataset.backTo);
+        return;
+      }
+
+      const dynamicQuadro = document.getElementById('dynamic-details-quadro');
+      if (dynamicQuadro) {
+        // Oculta o quadro
+        dynamicQuadro.style.display = 'none';
+        // Limpa o conteúdo
+        dynamicQuadro.innerHTML = '<p class="placeholder-text">Selecione uma subtarefa para ver seu checklist e documentos.</p>';
+      } // fim do if (dynamicQuadro)
+
+      // Remove a classe 'selected' de qualquer item de subtarefa ou documento
+      document.querySelectorAll('.subtask-item.selected, .document-item.selected').forEach(item => {
+        item.classList.remove('selected');
+      });
+    } // fim do if (closeDynamicQuadroBtn)
+
     // Verifica se o clique foi em um cabeçalho de quadro colapsável (Subtarefas/Documentos)
     const collapsibleHeader = event.target.closest('.task-quadro .quadro-header');
     if (collapsibleHeader) {
@@ -140,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     // Verifica se o clique foi em uma subtarefa
     const subtaskItem = event.target.closest('.subtask-item');
     if (subtaskItem) {
+      // Se estiver bloqueada, não faz nada
+      if (subtaskItem.classList.contains('blocked')) {
+        return;
+      }
+
       // Remove a seleção de outros itens
       document.querySelectorAll('.subtask-item.selected').forEach(item => item.classList.remove('selected'));
       // Adiciona a classe de seleção ao item clicado
@@ -158,67 +227,141 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       atualizarQuadroDocumento(documentItem.dataset.documentId);
     } // fim do if (documentItem)
 
-    // Verifica se o clique foi no botão de fechar o quadro dinâmico
-    const closeDynamicQuadroBtn = event.target.closest('.close-dynamic-quadro-btn');
-    if (closeDynamicQuadroBtn) {
-      const dynamicQuadro = document.getElementById('dynamic-details-quadro');
-      if (dynamicQuadro) {
-        // Oculta o quadro
-        dynamicQuadro.style.display = 'none';
-        // Limpa o conteúdo
-        dynamicQuadro.innerHTML = '<p class="placeholder-text">Selecione uma subtarefa para ver seu checklist e documentos.</p>';
-      } // fim do if (dynamicQuadro)
-
-      // Remove a classe 'selected' de qualquer item de subtarefa ou documento
-      document.querySelectorAll('.subtask-item.selected, .document-item.selected').forEach(item => {
-        item.classList.remove('selected');
-      });
-    } // fim do if (closeDynamicQuadroBtn)
-
     // Verifica se o clique foi no botão de instruções do checklist
     const instructionBtn = event.target.closest('.checklist-instruction-btn');
     if (instructionBtn) {
-      // Prepara o conteúdo para o modal.
-      // Usamos innerHTML para que a tag <a> seja renderizada corretamente.
-      const instructionHTML = `
-        <p>Para fazer essa tarefa faça xxxxxx e vá em link: <a href="https://www.preservabens.com.br" target="_blank">https://www.preservabens.com.br</a> e depois clique em xxxxx.</p>
-        <p>Você precisa fazer isso para garantir que yyyyyyy.</p>
-      `;
+      const listItem = instructionBtn.closest('li');
+      const label = listItem.querySelector('label');
+      const currentTitle = label ? label.textContent : 'Item do Checklist';
+      
+      // Simulação de instruções (Memo)
+      const currentMemo = `Para realizar esta tarefa, consulte o manual em:\nhttps://www.preservabens.com.br\n\nCertifique-se de validar os dados antes de concluir.`;
 
-      // Encontra o container de conteúdo do modal e insere o texto.
+      const modalTitle = document.getElementById('modal-title');
+      if (modalTitle) modalTitle.textContent = 'Detalhes do Item';
+
       const modalContent = document.getElementById('modal-content');
-      modalContent.innerHTML = instructionHTML;
+      
+      // Lógica de permissão baseada no Ticket (Interno/Externo)
+      const ticketTypeSelect = document.getElementById('task-ticket-type');
+      const isTicketInterno = ticketTypeSelect ? ticketTypeSelect.value === 'interno' : true;
+      const checkboxDisabled = isTicketInterno ? 'disabled' : '';
+
+      modalContent.innerHTML = `
+        <div class="document-form">
+          <div class="form-field">
+            <label for="checklist-item-title">Título:</label>
+            <input type="text" id="checklist-item-title" class="form-input" value="${currentTitle}">
+          </div>
+          <div class="form-field">
+            <label for="checklist-item-memo">Instruções (Memo):</label>
+            <textarea id="checklist-item-memo" class="form-input memo-area" rows="6">${currentMemo}</textarea>
+            <small class="text-muted">Links inseridos serão suportados na visualização.</small>
+          </div>
+          <div class="checkbox-container" style="margin-top: 10px; display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="checklist-client-view" ${checkboxDisabled}>
+            <label for="checklist-client-view">Cliente pode ver a conclusão do checklist</label>
+          </div>
+          <div class="document-actions">
+            <button id="save-checklist-btn" class="page-header-btn">Salvar</button>
+          </div>
+        </div>
+      `;
 
       // Exibe o modal.
       modalOverlay.style.display = 'flex';
-    } // fim do if (instructionBtn)
 
-    // Verifica se o clique foi no botão "Trabalhar com esse chamado"
-    if (event.target.id === 'btn-trabalhar-chamado') {
-      const taskId = event.target.dataset.taskId;
-      if (!taskId) return;
-
-      // Simula a busca da tarefa pelo ID. No futuro, isso virá de uma API.
-      const tarefaParaCarregar = {
-        id: taskId,
-        titulo: 'Chamado Carregado da Busca',
-        dataConclusao: '2025-12-25',
-        prioridade: 5,
-        tipo: 'sistema'
+      // Lógica de Cores do Modal (Interno/Externo)
+      const clientViewCheck = document.getElementById('checklist-client-view');
+      const modalInputs = modalContent.querySelectorAll('.form-input');
+      
+      const updateModalColors = () => {
+          const isPublic = clientViewCheck.checked;
+          const color = isPublic ? '#F1F2F3' : '#FCF8EC';
+          modalInputs.forEach(input => input.style.backgroundColor = color);
       };
 
-      // Encontra e fecha o accordion de Busca e abre o de Tarefa Selecionada
-      const accordionContainer = event.target.closest('.accordion-container');
-      const allGroups = accordionContainer.querySelectorAll('.accordion-group');
-      allGroups.forEach(group => {
-        const title = group.querySelector('.accordion-title').textContent;
-        if (title.includes('Busca')) group.removeAttribute('open');
-        if (title.includes('Tarefa Selecionada')) group.setAttribute('open', '');
-      });
+      if (clientViewCheck) {
+          clientViewCheck.addEventListener('change', updateModalColors);
+          updateModalColors(); // Inicializa com a cor correta
+      }
 
-      // Carrega os detalhes da tarefa no accordion correspondente
-      abrirDetalheTarefa(tarefaParaCarregar);
-    } // fim do if (btn-trabalhar-chamado)
+      // Adiciona evento ao botão de salvar (dentro do modal)
+      const saveBtn = document.getElementById('save-checklist-btn');
+      if (saveBtn) {
+        saveBtn.onclick = () => {
+           const newTitle = document.getElementById('checklist-item-title').value;
+           if (label) label.textContent = newTitle;
+           // Aqui salvaria o memo também via API
+           alert('Item do checklist atualizado com sucesso (Simulação).');
+           modalOverlay.style.display = 'none';
+        };
+      }
+    } // fim do if (instructionBtn)
+
+    // Verifica se o clique foi no botão "Buscar" (na página busca.html)
+    if (event.target.id === 'btn-buscar') {
+      const results = document.getElementById('search-results-processos');
+      if (results) {
+        const listContainer = results.querySelector('.custom-list-container');
+        const allTasks = getMockTasks();
+        
+        // Distribuição das tarefas conforme solicitado:
+        // 1. Fulano: 1 tarefa
+        // 2. Ciclano: 0 tarefas
+        // 3. Beltrano: Todas as outras
+        const clients = [
+          { name: 'Fulano de Tal', info: 'Rua Xxxxx - Imóvel - Locatário', tasks: [allTasks[0]] },
+          { name: 'Ciclano de Tal', info: 'Rua yyyyy - Pessoa Física - Lead', tasks: [] },
+          { name: 'Beltrano de Tal', info: 'Rua zzzzzz - Pessoa Jurídica - Fornecedor', tasks: allTasks.slice(1) }
+        ];
+
+        // Gera o HTML dos resultados
+        listContainer.innerHTML = clients.map(client => {
+          const tasksHtml = client.tasks.length > 0 
+            ? client.tasks.map(t => {
+                const [day, month, year] = t.dataConclusao.split('/');
+                const dataTarefa = new Date(year, month - 1, day);
+                const hoje = new Date();
+                hoje.setHours(0,0,0,0);
+                const isAtrasada = dataTarefa < hoje;
+                const dataClass = isAtrasada ? 'text-danger' : 'text-muted';
+
+                return `
+                  <div class="task-card" data-task-id="${t.id}">
+                    <div class="card-header">
+                      <span>#${t.id} <span title="Prioridade">🚨 ${t.prioridade}</span></span>
+                      <span class="${dataClass}">${t.dataConclusao}</span>
+                    </div>
+                    <h4 class="card-title">${t.titulo}</h4>
+                    <div class="card-meta">
+                      <span>${t.tipo}</span>
+                      <span>${t.relacao}</span>
+                    </div>
+                  </div>`;
+              }).join('')
+            : '<p class="text-muted">Nenhuma tarefa encontrada.</p>';
+
+          return `
+            <details class="custom-list-item">
+              <summary class="custom-list-summary">
+                <div class="summary-info">
+                  <strong>${client.name}</strong>
+                  <small>${client.info}</small>
+                </div>
+                <span class="arrow-icon">▼</span>
+              </summary>
+              <div class="custom-list-content">
+                <h6>Tarefas deste cliente:</h6>
+                ${tasksHtml}
+              </div>
+            </details>
+          `;
+        }).join('');
+
+        results.style.display = 'block';
+      }
+    }
 
     // --- REGRAS DE NEGÓCIO: LÓGICA DA BUSCA EM ETAPAS ---
     // O fluxo de busca é dividido em etapas para guiar o usuário.
@@ -229,52 +372,11 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     // 5. Se o usuário clica em um item da segunda tabela, um resumo é exibido na terceira etapa.
     // 6. O botão "Trabalhar com esse chamado" carrega a tarefa na área de trabalho principal.
 
-    // Etapa 1: Clique no botão "Buscar"
-    if (event.target.id === 'btn-buscar') {
-      document.getElementById('search-results-processos').style.display = 'block';
-      document.getElementById('search-results-tarefas').style.display = 'block'; // Mostra ambas as tabelas
-      document.getElementById('search-final-details').style.display = 'none';
-    }
-
-    // Etapa 2: Clique em uma linha da primeira tabela (Processos/Pessoas)
-    const processoLink = event.target.closest('#search-results-processos .table-link');
-    if (processoLink) {
-      event.preventDefault(); // Impede que o link '#' navegue
-      const processoRow = processoLink.closest('tr');
-      // Remove a seleção de outras linhas na mesma tabela
-      processoRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
-      // Adiciona a seleção à linha clicada
-      processoRow.classList.add('selected');
-      // --- REGRAS DE NEGÓCIO: Filtro da Tabela de Tarefas ---
-      // Ao selecionar um item na primeira tabela (Processos/Clientes), a segunda tabela (Tarefas)
-      // deve ser atualizada para mostrar todos os chamados relacionados àquele item.
-      // A ordenação segue duas etapas:
-      // 1. Tarefas ativas (não finalizadas), ordenadas da mais recente para a mais antiga.
-      // 2. Tarefas finalizadas, também ordenadas da mais recente para a mais antiga.
-      // A data de referência para ordenação é a "data fictícia" (data de conclusão + prioridade).
-      // Por enquanto, a lógica de recarga e ordenação é simulada, mas o fluxo está correto.
-
-      // Garante que a tabela de tarefas seja exibida
-      document.getElementById('search-results-tarefas').style.display = 'block';
-      // Oculta os detalhes finais, pois uma nova seleção de processo foi feita
-      document.getElementById('search-final-details').style.display = 'none';
-      // Oculta o botão "Trabalhar com esse chamado" até que uma tarefa seja selecionada
-      document.getElementById('btn-trabalhar-chamado').style.display = 'none';
-    }
-
-    // 3. Clique em uma linha da segunda tabela (Tarefas)
-    const tarefaLinkBusca = event.target.closest('#search-results-tarefas .table-link');
-    if (tarefaLinkBusca) {
-      event.preventDefault(); // Impede que o link '#' navegue
-      const tarefaRow = tarefaLinkBusca.closest('tr');
-      // Remove a seleção de outras linhas na mesma tabela
-      tarefaRow.parentElement.querySelectorAll('.selected').forEach(row => row.classList.remove('selected'));
-      // Adiciona a seleção à linha clicada
-      tarefaRow.classList.add('selected');
-      // Mostra a etapa final
-      const taskId = tarefaLinkBusca.dataset.taskId;
-
-      // Simula a busca da tarefa pelo ID
+    // 3. Clique em um card de tarefa (Tarefas na Busca ou Lista)
+    const tarefaCardBusca = event.target.closest('#search-results-processos .task-card');
+    if (tarefaCardBusca) {
+      const taskId = tarefaCardBusca.dataset.taskId;
+      // Simula objeto da tarefa
       const tarefaEncontrada = {
         id: taskId,
         titulo: 'Chamado Carregado da Busca',
@@ -282,33 +384,13 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
         prioridade: 5,
         tipo: 'sistema'
       };
-
-      // Popula os detalhes da tarefa na área de busca
-      const finalDetails = document.getElementById('search-final-details');
-      finalDetails.innerHTML = `
-        <h5>3. Detalhes da Tarefa #${tarefaEncontrada.id}</h5>
-        <p>
-          <strong>Tipo:</strong> ${tarefaEncontrada.tipo} <br>
-          <strong>Título:</strong> ${tarefaEncontrada.titulo} <br>
-          <strong>Conclusão:</strong> ${tarefaEncontrada.dataConclusao} <br>
-          <strong>Prioridade:</strong> ${tarefaEncontrada.prioridade}
-        </p>
-        <p><strong>Resumo:</strong> Cliente João da Silva, contrato iniciado em 01/12/2025. Documentação pendente: comprovante de renda.</p>
-        <p><strong>Movimentos:</strong> Nenhum movimento registrado.</p>
-        <p><strong>Subtarefas:</strong> Nenhuma subtarefa associada.</p>
-        <p><strong>Documentos:</strong> Nenhum documento associado.</p>
-        <p><strong>Log:</strong> Nenhuma entrada de log.</p>
-        <hr>
-        <p><strong>Como funciona a busca:</strong></p>
-        <p>Nesta tela, ao clicar em "Buscar", a primeira tabela mostrará uma lista de pessoas ou imóveis relacionados à sua pesquisa. A segunda tabela, por sua vez, mostrará os chamados que correspondem ao termo buscado.</p>
-        <p>Se você clicar em um resultado da primeira lista (Pessoas/Imóveis), a segunda lista será atualizada para exibir todos os chamados relacionados a esse item, ordenados do mais recente para o mais antigo.</p>
-        <p>Ao clicar em um item na segunda tela (Tarefas), este campo é atualizado com um resumo detalhado do chamado selecionado.</p>
-        <p>Finalmente, ao clicar no botão "Trabalhar com esse chamado", o sistema carregará a tarefa no accordion "Tarefa Selecionada" e minimizará este accordion de "Busca".</p>
-      `;
-      document.getElementById('search-final-details').style.display = 'block';
-      document.getElementById('btn-trabalhar-chamado').style.display = 'inline-block';
-      // Força a rolagem para o novo conteúdo, ajudando a corrigir falhas de renderização e melhorando a UX
-      document.getElementById('search-final-details').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
+      // Define a tarefa selecionada globalmente e navega para a página de tarefas
+      window.selectedTaskData = tarefaEncontrada;
+      // Atualiza o menu ativo visualmente
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.nav-btn[data-page="tarefas.html"]').classList.add('active');
+      loadPage('tarefas.html');
     }
     // --- FIM DA LÓGICA DA BUSCA ---
 
@@ -373,9 +455,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     if (targetButton && !targetButton.classList.contains('nav-btn')) {
         const page = targetButton.dataset.page;
         if (page) {
+            // Captura o ID do processo se existir
+            if (targetButton.dataset.processId) {
+                window.currentProcessId = targetButton.dataset.processId;
+                window.currentProcessName = targetButton.textContent;
+            }
             loadPage(page);
         }
     }
+
   });
 
   /**
@@ -414,9 +502,17 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       if (page === 'tarefas.html') {
         initializeTarefasPage();
       }
+      if (page === 'busca.html') {
+        initializeBuscaPage();
+      }
+      if (page === 'cadastros.html') {
+        initializeCadastrosPage();
+      }
       if (page === 'processos.html') {
-        // Após carregar a página de processos, iguala a largura dos botões.
-        equalizeButtonWidths('.search-controls');
+        // Botões de processos agora são flexíveis e controlados via CSS (.process-btn)
+      }
+      if (page === 'processos/editor_fluxo.html') {
+        initializeProcessEditor();
       }
     } catch (error) {
       console.error('Falha no fetch:', error);
@@ -470,11 +566,21 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     }
   };
 
-  // Função para inicializar a página de tarefas
-  const initializeTarefasPage = () => {
-    // --- REGRAS DE NEGÓCIO: Inicialização da Tela de Tarefas ---
-    // 1. Popula o accordion "Lista de Tarefas".
-    // 2. Executa a lógica de "Próxima Tarefa" para abrir a mais importante.
+  // Função auxiliar para obter dados simulados de tarefas
+  const getMockTasks = () => {
+    return [
+      { id: 1245, dataConclusao: '10/12/2025', prioridade: 1, tipo: 'Sistema', titulo: 'Vazamento de Gás', relacao: 'Inquilino - Apto 101' },
+      { id: 1472, dataConclusao: '15/12/2025', prioridade: 5, tipo: 'Nova', titulo: 'Taxa Maior Lançada', relacao: 'Cliente - Empresa X' },
+      { id: 1466, dataConclusao: '20/12/2025', prioridade: 3, tipo: 'Sistema', titulo: 'Nova Locação Rio das Pedras 301', relacao: 'Proprietário - Sr. José' },
+      { id: 1890, dataConclusao: '10/12/2025', prioridade: 8, tipo: 'Sistema', titulo: 'Verificar documentação', relacao: 'Inquilino - Apto 302' },
+      { id: 1950, dataConclusao: '09/12/2025', prioridade: 2, tipo: 'Nova', titulo: 'Email: Dúvida sobre reajuste', relacao: 'Cliente - Empresa Y' },
+      { id: 2001, dataConclusao: '06/12/2025', prioridade: 0, tipo: 'Sistema', titulo: 'Reparo Urgente Calha', relacao: 'Condomínio Z' }, // Atrasada
+      { id: 2002, dataConclusao: '05/12/2025', prioridade: 6, tipo: 'Nova', titulo: 'Cliente sem acesso ao sistema', relacao: 'Cliente - Empresa W' }, // Atrasada
+    ];
+  };
+
+  // Função para inicializar a página de Busca e Listas
+  const initializeBuscaPage = () => {
 
     // Encontra o accordion da Lista de Tarefas
     const allAccordions = document.querySelectorAll('.accordion-container .accordion-group');
@@ -488,107 +594,389 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
     if (listaTarefasAccordion) {
       const content = listaTarefasAccordion.querySelector('.accordion-content');
-      const tableBody = content.querySelector('tbody');
+      
+      // Reconstrói o HTML do accordion para incluir os novos controles (Abas e Filtros)
+      content.innerHTML = `
+        <div class="task-list-controls" style="margin-bottom: 15px;">
+            <div class="tabs-nav" style="margin-bottom: 10px;">
+                <button class="tab-btn active" data-scope="user">Suas Tarefas</button>
+                <button class="tab-btn" data-scope="sector">Setor</button>
+                <button class="tab-btn" data-scope="all">Todas</button>
+            </div>
+            <div class="search-controls" style="background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #eee;">
+                <div class="form-field" style="flex: 1;">
+                    <label style="font-size: 12px; font-weight: bold;">Status:</label>
+                    <select id="task-filter-status" class="form-input">
+                        <option value="active" selected>Ativas</option>
+                        <option value="completed">Concluídas</option>
+                        <option value="all">Todas</option>
+                    </select>
+                </div>
+                <div class="form-field" style="flex: 2;">
+                    <label style="font-size: 12px; font-weight: bold;">Ordenar por:</label>
+                    <select id="task-filter-order" class="form-input">
+                        <option value="due_priority_asc" selected>Data do Término + Prioridade: Menores primeiro</option>
+                        <option value="due_priority_desc">Data do término + Prioridade: Maiores primeiro</option>
+                        <option value="due_asc">Data do Término - Menores primeiro</option>
+                        <option value="due_desc">Data do Término - Maiores primeiro</option>
+                        <option value="created_asc">Data da criação - Antigas Primeiro</option>
+                        <option value="created_desc">Data da criação - Recentes primeiro</option>
+                        <option value="priority_asc">Prioridade - Menores primeiro</option>
+                        <option value="priority_desc">Prioridade - Maiores primeiro</option>
+                        <option value="recent">Mais Recente Primeiro</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="main-task-list"></div>
+      `;
+
+      const taskListContainer = content.querySelector('#main-task-list');
 
       // --- REGRAS DE NEGÓCIO: Ordenação da Lista de Tarefas (Prioridade + Data) ---
       // 1. Simulação de dados da lista de tarefas, incluindo prioridade e tarefas atrasadas.
-      let tarefas = [
-        // Adicionamos o campo 'hora' para tarefas com tempo definido.
-        { id: 1245, dataConclusao: '10/12/2025', prioridade: 1, tipo: 'Sistema', titulo: 'Vazamento de Gás', relacao: 'Inquilino - Apto 101' },
-        { id: 1472, dataConclusao: '15/12/2025', prioridade: 5, tipo: 'Nova', titulo: 'Taxa Maior Lançada', relacao: 'Cliente - Empresa X' },
-        { id: 1466, dataConclusao: '20/12/2025', prioridade: 3, tipo: 'Sistema', titulo: 'Nova Locação Rio das Pedras 301', relacao: 'Proprietário - Sr. José' },
-        { id: 1890, dataConclusao: '10/12/2025', prioridade: 8, tipo: 'Sistema', titulo: 'Verificar documentação', relacao: 'Inquilino - Apto 302' },
-        { id: 1950, dataConclusao: '09/12/2025', prioridade: 2, tipo: 'Nova', titulo: 'Email: Dúvida sobre reajuste', relacao: 'Cliente - Empresa Y' },
-        { id: 2001, dataConclusao: '06/12/2025', prioridade: 0, tipo: 'Sistema', titulo: 'Reparo Urgente Calha', relacao: 'Condomínio Z' }, // Atrasada
-        { id: 2002, dataConclusao: '05/12/2025', prioridade: 6, tipo: 'Nova', titulo: 'Cliente sem acesso ao sistema', relacao: 'Cliente - Empresa W' }, // Atrasada
-      ];
+      let tarefas = getMockTasks();
 
-      // 2. Ordena a lista.
-      // A ordenação se dá por uma "data fictícia" de prazo.
-      // Essa data é a data de conclusão original + o número de dias da prioridade.
-      // O critério de desempate é o código da tarefa.
-      tarefas.sort((a, b) => {
-        const calcularDataFicticia = (tarefa) => {
-          const [day, month, year] = tarefa.dataConclusao.split('/');
-          const data = new Date(`${year}-${month}-${day}`);
-          
-          // Se a tarefa não tem hora, assume-se 17:59.
-          if (tarefa.hora) {
-            const [h, m] = tarefa.hora.split(':');
-            data.setHours(h, m, 0, 0);
-          } else {
-            data.setHours(17, 59, 0, 0);
-          }
-          // Adiciona os dias da prioridade à data.
-          data.setDate(data.getDate() + tarefa.prioridade);
-          return data;
-        };
-        const dataFicticiaA = calcularDataFicticia(a);
-        const dataFicticiaB = calcularDataFicticia(b);
+      // Função de renderização filtrada e ordenada
+      const renderFilteredList = () => {
+        const activeTab = content.querySelector('.tab-btn.active').dataset.scope;
+        const statusFilter = document.getElementById('task-filter-status').value;
+        const orderFilter = document.getElementById('task-filter-order').value;
 
-        // Compara as datas fictícias. Se forem iguais, desempata pelo código.
-        if (dataFicticiaA.getTime() !== dataFicticiaB.getTime()) {
-          return dataFicticiaA - dataFicticiaB;
-        } else {
-          return a.id - b.id;
+        // 1. Filtragem (Simulada)
+        let filtered = tarefas.filter(t => {
+            // Filtro de Status (Simulado, pois o mock não tem status explícito, assumimos todas ativas exceto se lógica disser o contrário)
+            // Para simulação: IDs pares são "Concluídas" se o filtro for esse.
+            const isCompleted = t.id % 2 === 0 && t.id > 2000; // Regra arbitrária para teste
+            if (statusFilter === 'active' && isCompleted) return false;
+            if (statusFilter === 'completed' && !isCompleted) return false;
+            
+            // Filtro de Escopo (Simulado)
+            // Suas Tarefas: Padrão. Setor: IDs > 1500. Todas: Tudo.
+            if (activeTab === 'user' && t.id > 1800) return false; 
+            if (activeTab === 'sector' && t.id < 1500) return false;
+
+            return true;
+        });
+
+        // 2. Ordenação
+        filtered.sort((a, b) => {
+            const getDataObj = (dateStr) => {
+                const [day, month, year] = dateStr.split('/');
+                return new Date(`${year}-${month}-${day}`);
+            };
+            
+            const dateA = getDataObj(a.dataConclusao);
+            const dateB = getDataObj(b.dataConclusao);
+            
+            // Cálculo Data Fictícia (Data + Prioridade)
+            const getFictitiousDate = (t) => {
+                const d = getDataObj(t.dataConclusao);
+                d.setDate(d.getDate() + t.prioridade);
+                return d;
+            };
+
+            switch (orderFilter) {
+                case 'due_priority_asc': // Padrão
+                    return getFictitiousDate(a) - getFictitiousDate(b);
+                case 'due_priority_desc':
+                    return getFictitiousDate(b) - getFictitiousDate(a);
+                case 'due_asc':
+                    return dateA - dateB;
+                case 'due_desc':
+                    return dateB - dateA;
+                case 'created_asc': // Usando ID como proxy de criação
+                    return a.id - b.id;
+                case 'created_desc':
+                case 'recent':
+                    return b.id - a.id;
+                case 'priority_asc': // Menor valor = Mais urgente (0)
+                    return a.prioridade - b.prioridade;
+                case 'priority_desc':
+                    return b.prioridade - a.prioridade;
+                default:
+                    return a.id - b.id;
+            }
+        });
+
+        // 3. Renderização
+        if (taskListContainer) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            if (filtered.length === 0) {
+                taskListContainer.innerHTML = '<p class="text-muted" style="padding: 10px;">Nenhuma tarefa encontrada com os filtros atuais.</p>';
+                return;
+            }
+
+            taskListContainer.innerHTML = filtered.map(t => {
+            const [day, month, year] = t.dataConclusao.split('/');
+            const dataTarefa = new Date(year, month - 1, day);
+            const isAtrasada = dataTarefa < hoje;
+            const dataClass = isAtrasada ? 'text-danger' : 'text-muted';
+
+            return `
+                <div class="task-card" data-task-id="${t.id}">
+                <div class="card-header">
+                    <span>#${t.id} <span title="Prioridade">🚨 ${t.prioridade}</span></span>
+                    <span class="${dataClass}">${t.dataConclusao}</span>
+                </div>
+                <h4 class="card-title">${t.titulo}</h4>
+                <div class="card-meta">
+                    <span>${t.tipo}</span>
+                    <span>${t.relacao}</span>
+                </div>
+                </div>
+            `;
+            }).join('');
         }
+      };
+
+      // Event Listeners para os controles
+      content.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+              content.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+              e.target.classList.add('active');
+              renderFilteredList();
+          });
       });
 
-      if (tableBody) {
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0); // Zera a hora para comparar apenas a data
+      document.getElementById('task-filter-status').addEventListener('change', renderFilteredList);
+      document.getElementById('task-filter-order').addEventListener('change', renderFilteredList);
 
-        // Popula a tabela com os dados
-        tableBody.innerHTML = tarefas.map(t => {
-          const [day, month, year] = t.dataConclusao.split('/');
-          const dataTarefa = new Date(`${year}-${month}-${day}`);
-          const isAtrasada = dataTarefa < hoje;
-
-          // 3. A data da tarefa fica vermelha se estiver atrasada.
-          const dataHtml = isAtrasada ? `<span class="text-danger">${t.dataConclusao}</span>` : t.dataConclusao;
-
-          return `
-            <tr data-task-id="${t.id}">
-              <td><a href="#" class="table-link" data-task-id="${t.id}">${t.id}</a></td>
-              <td>${t.prioridade}</td>
-              <td>${dataHtml}</td>
-              <td>${t.tipo}</td>
-              <td>${t.titulo}</td>
-              <td>${t.relacao}</td>
-            </tr>
-          `;
-        }).join('');
-      } // fim do if(tableBody)
-
-      // --- REGRAS DE NEGÓCIO: Comentário do botão "Próxima Tarefa" ---
-      // A lógica deste botão é complexa: ele ordena as tarefas com base em um score
-      // (data de conclusão + prioridade) e intercala tarefas "Novas" (de clientes)
-      // com tarefas do "Sistema" (internas) para garantir um fluxo de trabalho balanceado.
-      const proximaTarefaBtn = content.querySelector('#btn-proxima-tarefa-accordion');
+      // Renderização Inicial
+      renderFilteredList();
+      
+      const proximaTarefaBtn = document.getElementById('btn-proxima-tarefa-accordion');
       if (proximaTarefaBtn) {
         proximaTarefaBtn.title = "Ordena as tarefas por urgência (data + prioridade), intercalando tarefas novas e do sistema, e seleciona a mais importante.";
       }
 
       // Adiciona um listener para os cliques nos itens da lista de tarefas
       // Usando delegação de eventos para capturar cliques nos links
-      tableBody.addEventListener('click', (event) => {
-        const link = event.target.closest('.table-link');
-        if (link) {
-          event.preventDefault();
-          const taskId = link.dataset.taskId;
+      if (taskListContainer) {
+        taskListContainer.addEventListener('click', (event) => {
+        const card = event.target.closest('.task-card');
+        if (card) {
+          const taskId = card.dataset.taskId;
           // Simula a busca da tarefa pelo ID para abrir nos detalhes
-          const tarefaSelecionada = tarefas.find(t => t.id.toString() === taskId) || { id: taskId, titulo: `Tarefa #${taskId}`, tipo: 'sistema', dataConclusao: '2025-12-31', prioridade: 5 };
-          abrirDetalheTarefa(tarefaSelecionada);
+          const tarefaSelecionada = tarefas.find(t => t.id.toString() === taskId) || { id: taskId, titulo: `Tarefa #${taskId}`, tipo: 'sistema', dataConclusao: '10/12/2025', prioridade: 5 };
+          
+          // Define a tarefa global e navega
+          window.selectedTaskData = tarefaSelecionada;
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('.nav-btn[data-page="tarefas.html"]').classList.add('active');
+          loadPage('tarefas.html');
         }
       });
-    } // fim do if (listaTarefasAccordion)
+    }
+  }
+  };
 
+  // Função para inicializar a página de Cadastros
+  const initializeCadastrosPage = () => {
+    const container = document.getElementById('cadastros-view-container');
+    if (!container) return;
 
-    // Por fim, chama a função para selecionar a próxima tarefa
-    // Usamos um setTimeout para garantir que a interface tenha tempo de renderizar
-    // antes de simularmos o clique ou a chamada da função.
-    setTimeout(selecionarProximaTarefa, 100);
+    // Estado local da página
+    let currentTab = 'imoveis';
+    let isSearchVisible = false;
+    let currentLimit = 50; // Limite inicial de itens exibidos (Padrão Load More)
+
+    // Dados Mockados (Gerador simples)
+    const generateMockData = (type, count) => {
+      return Array.from({ length: count }, (_, i) => {
+        const id = i + 1;
+        if (type === 'imoveis') return { id, title: `Imóvel ${id} - Rua das Flores, ${100 + id}`, subtitle: `Bairro Centro - Matrícula ${5000 + id}` };
+        if (type === 'condominios') return { id, title: `Condomínio Edifício Solar ${id}`, subtitle: `CNPJ: 00.000.000/000${id}-00` };
+        if (type === 'pessoas') return { id, title: `Pessoa ${id} (PF/PJ)`, subtitle: `CPF/CNPJ: 000.000.000-${id < 10 ? '0' + id : id}` };
+        if (type === 'locacao') return { id, title: `Contrato de Locação #${1000 + id}`, subtitle: `Imóvel: Rua X, Inquilino: Fulano ${id}` };
+        if (type === 'venda') return { id, title: `Contrato de Venda #${2000 + id}`, subtitle: `Imóvel: Rua Y, Comprador: Ciclano ${id}` };
+        return {};
+      });
+    };
+
+    // Cache dos dados para não regerar sempre
+    const dataCache = {
+      imoveis: generateMockData('imoveis', 60), // 60 para testar paginação
+      condominios: generateMockData('condominios', 15),
+      pessoas: generateMockData('pessoas', 55),
+      locacao: generateMockData('locacao', 20),
+      venda: generateMockData('venda', 10)
+    };
+
+    // Função de Renderização Principal
+    const render = () => {
+      // Filtra os dados se houver busca
+      const searchTerm = document.getElementById('cadastro-search-input')?.value.toLowerCase() || '';
+      const allItems = dataCache[currentTab];
+      const filteredItems = allItems.filter(item => 
+        item.title.toLowerCase().includes(searchTerm) || 
+        item.subtitle.toLowerCase().includes(searchTerm)
+      );
+
+      // Aplica o limite atual (Padrão Load More em vez de paginação)
+      const displayItems = filteredItems.slice(0, currentLimit);
+      const hasMore = filteredItems.length > currentLimit;
+
+      container.innerHTML = `
+        <div class="tabs-nav">
+          <button class="tab-btn ${currentTab === 'imoveis' ? 'active' : ''}" data-tab="imoveis">Imóveis</button>
+          <button class="tab-btn ${currentTab === 'condominios' ? 'active' : ''}" data-tab="condominios">Condomínios</button>
+          <button class="tab-btn ${currentTab === 'pessoas' ? 'active' : ''}" data-tab="pessoas">Pessoas</button>
+          <button class="tab-btn ${currentTab === 'locacao' ? 'active' : ''}" data-tab="locacao">Locação</button>
+          <button class="tab-btn ${currentTab === 'venda' ? 'active' : ''}" data-tab="venda">Venda</button>
+        </div>
+
+        <div class="tab-controls">
+          <button id="btn-toggle-search" class="icon-btn" title="Buscar">🔍</button>
+          <button id="btn-new-cadastro" class="icon-btn" title="Novo Cadastro">➕</button>
+          <div class="search-bar-container" style="display: ${isSearchVisible ? 'block' : 'none'}">
+            <input type="text" id="cadastro-search-input" class="form-input" placeholder="Filtrar ${currentTab}..." value="${searchTerm}">
+          </div>
+        </div>
+
+        <div class="cadastro-list">
+          ${displayItems.length > 0 ? displayItems.map(item => `
+            <div class="cadastro-item" data-id="${item.id}">
+              <strong>${item.title}</strong><br>
+              <small class="text-muted">${item.subtitle}</small>
+            </div>
+          `).join('') : '<p class="text-muted">Nenhum registro encontrado.</p>'}
+        </div>
+        
+        <div class="pagination-info">
+          Exibindo ${displayItems.length} de ${filteredItems.length} resultados
+        </div>
+
+        ${hasMore ? `
+          <div class="load-more-controls" style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button id="btn-load-more-50" class="page-header-btn">Carregar mais 50</button>
+            <button id="btn-load-all" class="page-header-btn">Carregar Tudo</button>
+          </div>
+        ` : ''}
+      `;
+
+      attachEvents();
+    };
+
+    // Função para renderizar o formulário de cadastro (Novo/Editar)
+    const renderForm = (itemId = null) => {
+      const item = itemId ? dataCache[currentTab].find(i => i.id == itemId) : null;
+      const title = item ? `Editar: ${item.title}` : `Novo Cadastro em ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}`;
+
+      container.innerHTML = `
+        <div class="page-header" style="margin-top: 0;">
+          <h3>${title}</h3>
+          <button id="btn-back-list" class="page-header-btn">Voltar para Lista</button>
+        </div>
+        <div class="document-form">
+          <div class="form-field">
+            <label>Nome / Título:</label>
+            <input type="text" class="form-input" value="${item ? item.title : ''}">
+          </div>
+          <div class="form-field">
+            <label>Descrição / Documento:</label>
+            <input type="text" class="form-input" value="${item ? item.subtitle : ''}">
+          </div>
+          <div class="document-actions">
+            <button class="page-header-btn" onclick="alert('Salvo com sucesso (Simulação)');">Salvar</button>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btn-back-list').addEventListener('click', render);
+    };
+
+    // Anexa os eventos aos elementos renderizados
+    const attachEvents = () => {
+      // Troca de abas
+      container.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentTab = e.target.dataset.tab;
+          isSearchVisible = false; // Reseta busca ao trocar aba
+          currentLimit = 50; // Reseta o limite ao trocar de aba para evitar listas gigantes desnecessárias
+          render();
+        });
+      });
+
+      // Toggle Busca
+      document.getElementById('btn-toggle-search').addEventListener('click', () => {
+        isSearchVisible = !isSearchVisible;
+        render();
+        if (isSearchVisible) {
+          setTimeout(() => document.getElementById('cadastro-search-input').focus(), 50);
+        }
+      });
+
+      // Input de Busca
+      const searchInput = document.getElementById('cadastro-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+           const term = searchInput.value.toLowerCase();
+           const items = container.querySelectorAll('.cadastro-item');
+           let count = 0;
+           items.forEach(item => {
+             const text = item.innerText.toLowerCase();
+             if (text.includes(term) && count < 50) {
+               item.style.display = 'block';
+               count++;
+             } else {
+               item.style.display = 'none';
+             }
+           });
+           container.querySelector('.pagination-info').innerText = `Exibindo ${count} resultados (Filtrado)`;
+        });
+      }
+
+      // Botões de Carregar Mais (Load More)
+      const btnLoadMore50 = document.getElementById('btn-load-more-50');
+      if (btnLoadMore50) {
+        btnLoadMore50.addEventListener('click', () => {
+          currentLimit += 50;
+          render();
+        });
+      }
+
+      const btnLoadAll = document.getElementById('btn-load-all');
+      if (btnLoadAll) {
+        btnLoadAll.addEventListener('click', () => {
+          currentLimit = dataCache[currentTab].length; // Define o limite como o total de itens
+          render();
+        });
+      }
+
+      // Botão Novo
+      document.getElementById('btn-new-cadastro').addEventListener('click', () => {
+        renderForm();
+      });
+
+      // Clique no Item (Editar)
+      container.querySelectorAll('.cadastro-item').forEach(item => {
+        item.addEventListener('click', () => {
+          renderForm(item.dataset.id);
+        });
+      });
+    };
+
+    // Renderização inicial
+    render();
+  };
+
+  // Função para inicializar a página de tarefas (Visualização Única)
+  const initializeTarefasPage = () => {
+    // Se houver uma tarefa selecionada vinda da busca, carrega ela.
+    // Caso contrário, tenta carregar a próxima tarefa automaticamente.
+    if (window.selectedTaskData) {
+      abrirDetalheTarefa(window.selectedTaskData);
+      window.selectedTaskData = null; // Limpa após usar
+    } else {
+      // Por fim, chama a função para selecionar a próxima tarefa
+      // Usamos um setTimeout para garantir que a interface tenha tempo de renderizar
+      setTimeout(selecionarProximaTarefa, 100);
+    }
   }; // fim da função initializeTarefasPage
+
 
   /**
    * Encontra e seleciona a próxima tarefa mais prioritária.
@@ -673,9 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
     // 6. Executa a ação de "abrir" ou "destacar" a próxima tarefa.
     if (proximaTarefa) {
-      // --- REGRAS DE NEGÓCIO: Manipulação dos Accordions ---
-      // Fecha o accordion da lista e abre o da tarefa selecionada.
-      switchAccordionView('lista-tarefas', 'tarefa-selecionada');
+      // switchAccordionView('lista-tarefas', 'tarefa-selecionada'); // Não é mais necessário pois não há accordions em tarefas.html
       // alert(`A próxima tarefa é: #${proximaTarefa.id} - ${proximaTarefa.titulo}`);
       // Em vez de um alerta, agora vamos preencher o accordion "Tarefa Selecionada".
       abrirDetalheTarefa(proximaTarefa);
@@ -689,45 +1075,44 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
    * @param {object} tarefa - O objeto da tarefa a ser exibida.
    */
   const abrirDetalheTarefa = (tarefa) => {
-    // Garante que o accordion da tarefa selecionada esteja aberto e o da lista fechado.
-    switchAccordionView('lista-tarefas', 'tarefa-selecionada');
+    // Verifica se estamos na página correta. Se não, redireciona.
+    const taskViewContainer = document.getElementById('task-view-container');
+    if (!taskViewContainer) {
+      window.selectedTaskData = tarefa;
+      loadPage('tarefas.html');
+      return;
+    }
 
-    // --- REGRAS DE NEGÓCIO: Atualização do Título do Accordion ---
-    // 1. Encontra o accordion da "Tarefa Selecionada" de forma segura.
-    const allAccordionGroups = document.querySelectorAll('.accordion-container .accordion-group');
-    let taskAccordionGroup = null;
-    allAccordionGroups.forEach(group => {
-      const summary = group.querySelector('.accordion-title');
-      // Usamos um atributo de dados para identificar o accordion de forma mais robusta.
-      if (summary && summary.dataset.section === 'tarefa-selecionada') {
-        taskAccordionGroup = group;
-      }
-    });
-
-    if (!taskAccordionGroup) return; // Sai se não encontrar o accordion
-
-    // 2. Atualiza o título com o tipo e nome da tarefa, e adiciona o botão de editar.
-    const taskAccordionTitle = taskAccordionGroup.querySelector('.accordion-title');
+    // 2. Atualiza o título da página (opcional, mas bom para contexto)
     const tipoTarefaCapitalized = tarefa.tipo.charAt(0).toUpperCase() + tarefa.tipo.slice(1);
-    taskAccordionTitle.innerHTML = `${tipoTarefaCapitalized} - ${tarefa.titulo} <button id="edit-task-title-btn" class="table-action-btn" title="Alterar tipo/nome da tarefa">✏️</button>`;
+    // taskAccordionTitle.innerHTML = `${tipoTarefaCapitalized} - ${tarefa.titulo} <button id="edit-task-title-btn" class="table-action-btn" title="Alterar tipo/nome da tarefa">✏️</button>`;
+    
+    // Atualiza o header da página se existir
+    const pageTitle = document.querySelector('.page-title-group h2');
+    if (pageTitle) pageTitle.textContent = `Tarefa: ${tarefa.titulo}`;
 
-    const accordionContent = taskAccordionGroup.querySelector('.accordion-content');
     // Monta o HTML com os detalhes da tarefa.
     // Esta é uma estrutura básica que pode ser expandida no futuro.
 
     // --- Lógica de Ordenação ---
     // Ordena subtarefas: 1. Parciais, 2. Não iniciadas, 3. Concluídas
     const subtasks = [
-      { id: 1, text: 'Verificar documentação do inquilino', status: 'Pendente 1/3', completed: 1, total: 3 },
-      { id: 2, text: 'Agendar vistoria do imóvel', status: 'Concluída 3/3', completed: 3, total: 3 },
-      { id: 3, text: 'Emitir contrato de locação', status: 'Pendente 0/2', completed: 0, total: 2 },
-    ].sort((a, b) => {
-      const aIsCompleted = a.completed === a.total;
-      const bIsCompleted = b.completed === b.total;
-      if (aIsCompleted !== bIsCompleted) return aIsCompleted ? 1 : -1;
-      if (a.completed > 0 !== b.completed > 0) return a.completed > 0 ? -1 : 1;
-      return a.id - b.id; // Mantém ordem de criação como desempate
-    });
+      { id: 1, text: 'Verificar documentação do inquilino', status: 'Pendente 1/3', completed: 1, total: 3, blocked: false },
+      { id: 2, text: 'Agendar vistoria do imóvel', status: 'Concluída 3/3', completed: 3, total: 3, blocked: false },
+      // Tarefa bloqueada simulando dependência
+      { id: 3, text: 'Emitir contrato de locação', status: 'Aguardando', completed: 0, total: 2, blocked: true, dependency: 'Agendar vistoria do imóvel' },
+    ];
+    // Removida a ordenação automática para respeitar a ordem visual solicitada (Agendar -> Emitir)
+
+    // Verifica se todos os checklists estão concluídos para habilitar o botão de conclusão
+    const allChecklistsCompleted = subtasks.every(t => t.completed === t.total);
+    const completeBtnDisabled = allChecklistsCompleted ? '' : 'disabled';
+    const completeBtnTitle = allChecklistsCompleted ? 'Concluir esta tarefa' : 'Conclua todos os itens dos checklists para habilitar.';
+    
+    // Lógica Visual: Verde se completo, Vermelho Claro (igual Repetir: Não) se incompleto
+    const completeBtnClass = allChecklistsCompleted ? 'page-header-btn btn-important' : 'page-header-btn';
+    // rgb(255, 205, 210) é a cor do repeatSelect 'none'
+    const completeBtnStyle = allChecklistsCompleted ? '' : 'background-color: rgb(255, 205, 210); border-color: #ccc; color: #555;';
 
     // --- Lógica de Contadores e Cores para os Cabeçalhos ---
     // Contador de Subtarefas: (concluídas / total)
@@ -737,12 +1122,12 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     // Define a cor do título: verde se tudo estiver concluído, vermelho caso contrário.
     const subtaskHeaderClass = totalSubtasks > 0 && completedSubtasks === totalSubtasks ? 'status-completed-header' : 'text-danger';
 
-    accordionContent.innerHTML = `
+    taskViewContainer.innerHTML = `
       <div class="task-details-container">
         <!-- Controles de Data e Prioridade -->
         <div class="task-header-controls">
           <!-- 1. Prioridade (Movido para o início) -->
-          <div class="form-field">
+          <div class="form-field" style="width: 119px;">
             <label for="task-priority">Prioridade:</label>
             <select id="task-priority" class="form-input">
               <option value="0">0 (Urgente)</option>
@@ -760,19 +1145,19 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
           </div>
 
           <!-- 2. Data de Conclusão -->
-          <div class="form-field">
+          <div class="form-field" style="width: 153px;">
             <label for="task-due-date">Data de Conclusão:</label>
             <input type="date" id="task-due-date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
           </div>
 
           <!-- 3. Hora -->
-          <div class="form-field">
-            <label for="task-due-time">Hora (opcional):</label>
+          <div class="form-field" style="width: 85px;">
+            <label for="task-due-time">Hora:</label>
             <input type="time" id="task-due-time" class="form-input">
           </div>
 
           <!-- 4. Repetir (Novo) -->
-          <div class="form-field">
+          <div class="form-field" style="width: 145px;">
             <label for="task-repeat">Repetir:</label>
             <select id="task-repeat" class="form-input">
               <option value="none">Não</option>
@@ -785,10 +1170,110 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
             </select>
           </div>
 
+          <!-- Novo Campo Ticket -->
+          <div class="form-field" style="width: 120px;">
+            <label for="task-ticket-type">Ticket:</label>
+            <select id="task-ticket-type" class="form-input">
+                <option value="interno">Interno</option>
+                <option value="externo">Externo</option>
+            </select>
+          </div>
+
+          <!-- 6. Botão Concluir (Novo) -->
+          <div class="form-field" style="justify-content: flex-end;">
+            <label>&nbsp;</label> <!-- Espaçador -->
+            <button class="${completeBtnClass}" style="${completeBtnStyle}" ${completeBtnDisabled} title="${completeBtnTitle}" onclick="alert('Tarefa Concluída com Sucesso!')">Concluir Tarefa</button>
+          </div>
+
           <!-- 5. Configurações Dinâmicas de Repetição -->
           <div id="repeat-settings-wrapper" class="repeat-settings-wrapper" style="display: none;">
              <!-- Conteúdo injetado via JS -->
           </div>
+        </div>
+
+        <!-- Quadro Relacionados (Novo) -->
+        <div class="task-quadro">
+            <div class="quadro-header">
+                <h4>Relacionados</h4>
+            </div>
+            <div class="form-container">
+                <div class="form-field">
+                    <label>Tipo:</label>
+                    <select class="form-input">
+                        <option value="pessoa">Pessoa</option>
+                        <option value="imovel">Imóvel</option>
+                        <option value="tarefa">Tarefa</option>
+                        <option value="ticket">Ticket (API)</option>
+                    </select>
+                </div>
+                <div class="form-field" style="flex: 1;">
+                    <label>Buscar/Selecionar:</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" class="form-input" placeholder="Digite para buscar (ex: Nome, Endereço)...">
+                        <button class="icon-btn" title="Adicionar Relacionamento">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 
+              REGRAS DE NEGÓCIO - RELACIONADOS:
+              1. Pessoa: Busca no sistema. Link abre cadastro da pessoa em nova janela.
+              2. Imóvel: Busca no sistema. Link abre cadastro do imóvel em nova janela.
+              3. Tarefa: Referência a outra tarefa (ex: fusão). Mostra ID, Título e Status. Link abre a tarefa.
+              4. Ticket (API): Referência a um ticket do sistema externo (Superlógica). Link externo direto.
+            -->
+            <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <!-- 1. Pessoa -->
+                <span style="background: #e3f2fd; padding: 5px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #90caf9; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="cadastros.html?tipo=pessoa&id=1" target="_blank" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 5px;">👤 Fulano de Tal</a>
+                    <button class="icon-btn btn-danger-icon" style="width: 18px; height: 18px; font-size: 10px; line-height: 1; border: none; background: none;">✕</button>
+                </span>
+                <!-- 2. Imóvel -->
+                <span style="background: #e3f2fd; padding: 5px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #90caf9; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="cadastros.html?tipo=imovel&id=2" target="_blank" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 5px;">🏠 Sala 03 mormar</a>
+                    <button class="icon-btn btn-danger-icon" style="width: 18px; height: 18px; font-size: 10px; line-height: 1; border: none; background: none;">✕</button>
+                </span>
+                <!-- 3. Tarefa (Relacionada/Mesclada) -->
+                <span style="background: #e3f2fd; padding: 5px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #90caf9; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="tarefas.html?id=1245" target="_blank" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 5px;">📋 Tarefa 1245 - Vazamento de Gás (Aberta)</a>
+                    <button class="icon-btn btn-danger-icon" style="width: 18px; height: 18px; font-size: 10px; line-height: 1; border: none; background: none;">✕</button>
+                </span>
+                <!-- 4. Ticket API (Externo) -->
+                <span style="background: #e3f2fd; padding: 5px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #90caf9; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="https://preservaadm.superlogica.net/clients/financeiro/tickets/id/89" target="_blank" style="text-decoration: none; color: #333; display: flex; align-items: center; gap: 5px;">🎫 Ticket: 80</a>
+                    <button class="icon-btn btn-danger-icon" style="width: 18px; height: 18px; font-size: 10px; line-height: 1; border: none; background: none;">✕</button>
+                </span>
+            </div>
+        </div>
+
+        <!-- Quadro Responsável (Novo) -->
+        <div class="task-quadro">
+            <div class="quadro-header">
+                <h4>Responsável</h4>
+            </div>
+            <div class="form-container">
+                <div class="form-field">
+                    <label>Setor:</label>
+                    <select class="form-input">
+                        <option value="adm">Administrativo</option>
+                        <option value="com">Comercial</option>
+                        <option value="fin">Financeiro</option>
+                        <option value="jur">Jurídico</option>
+                    </select>
+                </div>
+                <div class="form-field" style="flex: 1;">
+                    <label>Usuário:</label>
+                    <select class="form-input">
+                        <option value="curr">Usuário Atual (Você)</option>
+                        <option value="u1">Fulano de Tal</option>
+                        <option value="u2">Ciclano da Silva</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>&nbsp;</label>
+                    <button class="page-header-btn" title="Transferir responsabilidade">Transferir</button>
+                </div>
+            </div>
         </div>
 
         <!-- Quadro de Resumo (Memo) -->
@@ -829,11 +1314,18 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
                 <h4 class="${subtaskHeaderClass}">Subtarefas ${subtaskCounter}</h4>
                 <button id="add-subtask-btn" class="icon-btn" title="Adicionar Subtarefa">+</button>
               </div>
-              <ul id="subtask-list" class="item-list-container">${subtasks.map(task => `
-                <li class="subtask-item" data-subtask-id="${task.id}">
-                  <span>${task.text}</span>
-                  <span class="item-status ${task.completed === task.total ? 'status-completed' : 'status-pending'}">${task.status}</span>
-                </li>`).join('')}</ul>
+              <ul id="subtask-list" class="item-list-container">${subtasks.map(task => {
+                const blockedClass = task.blocked ? 'blocked' : '';
+                const titleAttr = task.blocked ? `title="Aguardando conclusão de '${task.dependency}'"` : '';
+                const statusClass = task.blocked ? 'status-pending' : (task.completed === task.total ? 'status-completed' : 'status-pending');
+                const lockIcon = task.blocked ? '🔒 ' : '';
+                
+                return `
+                <li class="subtask-item ${blockedClass}" data-subtask-id="${task.id}" ${titleAttr}>
+                  <span>${lockIcon}${task.text}</span>
+                  <span class="item-status ${statusClass}">${task.status}</span>
+                </li>`;
+              }).join('')}</ul>
             </div>
         
           <!-- Área Dinâmica para Detalhes da Subtarefa (Checklist e Documentos) -->
@@ -848,8 +1340,14 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
           <div class="quadro-header">
             <h4>Adicionar Movimentação</h4>
           </div>
-          <textarea class="form-input memo-area" rows="10" placeholder="Digite aqui uma nova informação, comentário ou atualização sobre a tarefa..."></textarea>
-          <button class="page-header-btn" style="align-self: flex-end;">Salvar Movimentação</button>
+          <textarea id="movement-memo-input" class="form-input memo-area" rows="10" placeholder="Digite aqui uma nova informação, comentário ou atualização sobre a tarefa..."></textarea>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; align-items: center;">
+            <select id="movement-visibility" class="form-input" style="width: auto;">
+                <option value="internal">Interno</option>
+                <option value="public">Visível para o Cliente</option>
+            </select>
+            <button class="page-header-btn">Salvar Movimentação</button>
+          </div>
         </div>
 
         <!-- Quadro de Histórico de Movimentações -->
@@ -872,9 +1370,10 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
             <p class="log-item">01/12/2025 - 15:20 - Usuario 01: Criou este chamado com data de conclusão para xx/xx/xxxx</p>
             <p class="log-item">02/12/2025 - 09:41 - Usuário 02: Adicionou Subtarefa: Agendar Vistoria do Imóvel</p>
             <p class="log-item">02/12/2025 - 09:41 - Usuário 02: Adicionou Subtarefa: Emitir contrato de Locação</p>
-            <p class="log-item">02/12/2025 - 11:25 - Usuário 03: Concluiu  Subtarefa: Item 1 do checklist (ex: copia do RG) da subtarefa Agendar vistoria do imóvel</p>
-            <p class="log-item">02/12/2025 - 11:25 - Usuario 02: Adicionou Documento: CNH</p>
-            <p class="log-item">02/12/2025 - 11:30 - Usuario 03: Adicionou Documento: Residencia</p>
+            <!-- Azul significa movimentações visíveis para o cliente -->
+            <p class="log-item" style="color: #0d47a1;">02/12/2025 - 11:25 - Usuário 03: Concluiu  Subtarefa: Item 1 do checklist (ex: copia do RG) da subtarefa Agendar vistoria do imóvel</p>
+            <p class="log-item" style="color: #0d47a1;">02/12/2025 - 11:25 - Usuario 02: Adicionou Documento: CNH</p>
+            <p class="log-item" style="color: #0d47a1;">02/12/2025 - 11:30 - Usuario 03: Adicionou Documento: Residencia</p>
             <p class="log-item"><strong>03/12/2025 - 16:30 - Usuario 04:</strong> Alterou o Resumo da Tarefa, texto anterior: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim.</p>
           </div>
         </div>
@@ -886,7 +1385,18 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     const repeatWrapper = document.getElementById('repeat-settings-wrapper');
 
     if (repeatSelect && repeatWrapper) {
+      // Função para atualizar a cor do select de repetição conforme o estado
+      const updateRepeatColor = () => {
+        if (repeatSelect.value === 'none') {
+          repeatSelect.style.backgroundColor = 'rgb(255, 205, 210)'; // Vermelho Claro (Padrão)
+        } else {
+          repeatSelect.style.backgroundColor = 'rgb(220, 237, 200)'; // Verde Claro (Ativo)
+        }
+      };
+      updateRepeatColor(); // Aplica a cor na inicialização
+
       repeatSelect.addEventListener('change', () => {
+        updateRepeatColor(); // Atualiza a cor ao mudar a opção
         const val = repeatSelect.value;
         repeatWrapper.innerHTML = '';
         
@@ -1056,6 +1566,48 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
       prioritySelect.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
     };
 
+    // --- Lógica de Cores por Tipo de Ticket ---
+    const ticketTypeSelect = document.getElementById('task-ticket-type');
+    const taskDetailsContainer = taskViewContainer.querySelector('.task-details-container');
+    
+    // Elementos de Movimentação
+    const movementVisibilitySelect = document.getElementById('movement-visibility');
+    const movementMemoInput = document.getElementById('movement-memo-input');
+
+    if (ticketTypeSelect && taskDetailsContainer) {
+        const updateTicketTheme = () => {
+            const isInterno = ticketTypeSelect.value === 'interno';
+
+            // Remove classes anteriores e adiciona a nova baseada na seleção (interno/externo)
+            taskDetailsContainer.classList.remove('ticket-interno', 'ticket-externo');
+            taskDetailsContainer.classList.add(`ticket-${ticketTypeSelect.value}`);
+            
+            // Atualiza estado do combobox de movimentação
+            if (movementVisibilitySelect) {
+                if (isInterno) {
+                    movementVisibilitySelect.value = 'internal';
+                    movementVisibilitySelect.disabled = true;
+                } else {
+                    movementVisibilitySelect.disabled = false;
+                }
+                // Força atualização da cor do memo via evento change
+                movementVisibilitySelect.dispatchEvent(new Event('change'));
+            }
+        };
+
+        ticketTypeSelect.addEventListener('change', updateTicketTheme);
+        
+        // Listener para mudar a cor do memo de movimentação
+        if (movementVisibilitySelect && movementMemoInput) {
+            movementVisibilitySelect.addEventListener('change', () => {
+                const isPublic = movementVisibilitySelect.value === 'public';
+                movementMemoInput.style.backgroundColor = isPublic ? '#F1F2F3' : '#FCF8EC';
+            });
+        }
+
+        updateTicketTheme(); // Aplica na inicialização
+    }
+
     if (dateInput) {
       dateInput.addEventListener('change', validateDateTime);
       if (timeInput) timeInput.addEventListener('change', validateDateTime);
@@ -1069,6 +1621,117 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     }
   }; // fim da função abrirDetalheTarefa
 
+  // Função auxiliar para obter dados simulados de documentos
+  const getMockDocuments = () => {
+    return [
+      { id: 104, name: 'Renda 02', status: 'Vencido 35 dias', days: -35, type: 'attached', isMandatory: false, instructions: 'Anexar comprovante de renda secundário (ex: Aluguel, Dividendos).', validityDays: 90 },
+      { id: 103, name: 'Renda 01', status: 'Vencido 05 dias', days: -5, type: 'attached', isMandatory: false, instructions: 'Anexar holerite mais recente.', validityDays: 30 },
+      { id: 102, name: 'Residência', status: 'Validade: 10 Dias', days: 10, type: 'attached', isMandatory: true, instructions: 'Comprovante de residência (Água, Luz, Gás) com no máximo 3 meses.', validityDays: 90 },
+      { id: 101, name: 'CNH', status: 'Validade: 1290 dias', days: 1290, type: 'attached', isMandatory: true, instructions: 'Carteira Nacional de Habilitação válida.', validityDays: 1825 },
+      { id: 201, name: 'Certidão de estado civil', status: 'Opcional', type: 'optional', isMandatory: false, instructions: 'Necessário apenas para dependentes.', validityDays: 0 },
+      { id: 202, name: 'Termo Cartório Email', status: 'Obrigatório', type: 'required', isMandatory: true, instructions: 'Termo assinado e reconhecido em cartório.', validityDays: 0 },
+    ];
+  };
+
+  // Função auxiliar que retorna o catálogo completo de documentos e suas validades padrão
+  const getDocumentCatalog = () => {
+    return {
+      "Imóveis - Registral": [
+        { label: "Matrícula do imóvel", validity: 30 },
+        { label: "Certidão de ônus reais", validity: 30 },
+        { label: "Certidão de inteiro teor", validity: 30 },
+        { label: "Escritura pública", validity: 0 }, // Indeterminada
+        { label: "Formal de partilha", validity: 0 },
+        { label: "Carta de adjudicação", validity: 0 },
+        { label: "Contrato particular", validity: 0 },
+        { label: "Registro de incorporação", validity: 0 }
+      ],
+      "Imóveis - Municipal/Construtivo": [
+        { label: "IPTU", validity: 365 },
+        { label: "CND IPTU", validity: 30 },
+        { label: "Cadastro imobiliário municipal", validity: 0 },
+        { label: "Planta cadastral", validity: 0 },
+        { label: "Alvará de construção", validity: 0 },
+        { label: "Habite-se", validity: 0 },
+        { label: "Certidão de numeração predial", validity: 0 },
+        { label: "Certidão de valor venal", validity: 365 }
+      ],
+      "Imóveis - Rural": [
+        { label: "Rural - CCIR", validity: 365 },
+        { label: "Rural - ITR", validity: 365 },
+        { label: "Rural - CND ITR", validity: 365 },
+        { label: "Rural - NIRF", validity: 0 },
+        { label: "Rural - Cadastro no INCRA", validity: 0 },
+        { label: "Rural - Certidão cadastral rural", validity: 365 },
+        { label: "Rural - CAR", validity: 0 },
+        { label: "Rural - Reserva legal", validity: 0 },
+        { label: "Rural - APP", validity: 0 },
+        { label: "Rural - Licença ambiental rural", validity: 1825 }, // Até 5 anos
+        { label: "Rural - Outorga de uso da água", validity: 3650 }, // Até 10 anos
+        { label: "Rural - Georreferenciamento", validity: 0 },
+        { label: "Rural - Certificação INCRA (SIGEF)", validity: 0 }
+      ],
+      "Imóveis - Condominial/Loteamento": [
+        { label: "Convenção de condomínio", validity: 0 },
+        { label: "Regimento interno", validity: 0 },
+        { label: "Ata de assembleia", validity: 0 },
+        { label: "Certidão do síndico", validity: 90 },
+        { label: "Declaração de inexistência de débitos", validity: 30 },
+        { label: "Registro do loteamento", validity: 0 },
+        { label: "Planta aprovada", validity: 0 },
+        { label: "Memorial descritivo", validity: 0 }
+      ],
+      "Imóveis - Posse/Uso": [
+        { label: "Contrato de locação", validity: 0 }, // Prazo contratual
+        { label: "Contrato de comodato", validity: 0 },
+        { label: "Termo de cessão", validity: 0 },
+        { label: "Declaração de posse", validity: 0 },
+        { label: "Usucapião (processo/sentença)", validity: 0 },
+        { label: "Certidão REURB", validity: 0 }
+      ],
+      "Imóveis - Projetos/Laudos": [
+        { label: "Planta baixa", validity: 0 },
+        { label: "Projeto arquitetônico", validity: 0 },
+        { label: "ART / RRT", validity: 0 },
+        { label: "Laudo estrutural", validity: 730 }, // 24 meses
+        { label: "Laudo elétrico", validity: 365 },
+        { label: "Laudo de vistoria", validity: 90 },
+        { label: "Laudo de avaliação", validity: 180 }
+      ],
+      "Pessoa Física": [
+        { label: "RG", validity: 3650 }, // 10 anos
+        { label: "CNH", validity: 0 }, // Conforme vencimento
+        { label: "CPF", validity: 0 },
+        { label: "Certidão de Estado Civil", validity: 90 },
+        { label: "Certidão de óbito", validity: 0 },
+        { label: "Comprovante de residência", validity: 90 },
+        { label: "Comprovante de Renda", validity: 90 },
+        { label: "Declaração/Recibo IRPF", validity: 365 },
+        { label: "Certidão negativa (Estadual/Federal)", validity: 30 },
+        { label: "Certidão negativa trabalhista (CNDT)", validity: 180 },
+        { label: "Certidão de protestos", validity: 30 },
+        { label: "Certidão criminal", validity: 90 },
+        { label: "Procuração", validity: 0 }
+      ],
+      "Pessoa Jurídica": [
+        { label: "Contrato social", validity: 90 },
+        { label: "Certidão Simplificada", validity: 90 },
+        { label: "Ata do administrador", validity: 0 },
+        { label: "Comprovante de CNPJ", validity: 30 },
+        { label: "Inscrição estadual/municipal", validity: 0 },
+        { label: "Alvará de funcionamento", validity: 365 },
+        { label: "Licença sanitária", validity: 365 },
+        { label: "Balanço patrimonial/DRE", validity: 365 },
+        { label: "Balancete", validity: 90 },
+        { label: "Extrato bancário", validity: 30 },
+        { label: "Faturamento declarado", validity: 90 },
+        { label: "CND Federal (Receita/PGFN)", validity: 180 },
+        { label: "FGTS (CRF)", validity: 30 },
+        { label: "Falência e recuperação judicial", validity: 30 }
+      ]
+    };
+  };
+
   const exibirDetalhesSubtarefa = (subtaskId) => {
     const dynamicArea = document.getElementById('dynamic-content-area');
     if (!dynamicArea) return;
@@ -1077,16 +1740,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     dynamicArea.style.display = 'contents';
 
     // --- Simulação de dados para a subtarefa ---
-    // Ordena documentos: Vencidos/próximos de vencer primeiro.
-    const documents = [
-      // Adicionamos a propriedade 'isMandatory' para identificar os documentos obrigatórios.
-      { id: 104, name: 'Renda 02', status: 'Vencido 35 dias', days: -35, type: 'attached', isMandatory: false }, // Não obrigatório e vencido
-      { id: 103, name: 'Renda 01', status: 'Vencido 05 dias', days: -5, type: 'attached', isMandatory: false }, // Não obrigatório
-      { id: 102, name: 'Residência', status: 'Validade: 10 Dias', days: 10, type: 'attached', isMandatory: true }, // Obrigatório e em dia
-      { id: 101, name: 'CNH', status: 'Validade: 1290 dias', days: 1290, type: 'attached', isMandatory: true }, // Obrigatório e em dia
-      { id: 201, name: 'Certidão de nascimento', status: 'Opcional', type: 'optional', isMandatory: false }, // Não obrigatório
-      { id: 202, name: 'Termo Cartório Email', status: 'Obrigatório', type: 'required', isMandatory: true }, // Obrigatório e pendente
-    ].sort((a, b) => {
+    const documents = getMockDocuments().sort((a, b) => {
       const typeOrder = { required: 1, attached: 2, optional: 3 };
       const aSort = typeOrder[a.type] || 99;
       const bSort = typeOrder[b.type] || 99;
@@ -1130,7 +1784,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         <div class="task-quadro task-col-item">
           <div class="quadro-header">
             <h4 class="${documentHeaderClass}">Documentos ${documentCounter}</h4>
-            <button class="icon-btn" title="Adicionar Documento">+</button>
+            <button id="add-document-btn" class="icon-btn" title="Adicionar Novo Documento">+</button>
           </div>
           <ul class="item-list-container">${documents.map(doc => { // Início do map de documentos
             // --- REGRAS DE NEGÓCIO: Cor do texto do nome do documento ---
@@ -1159,7 +1813,7 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         </div> 
 
       <!-- Quadro para detalhes do documento selecionado -->
-      <div id="dynamic-details-quadro" class="task-quadro task-col-item" style="display: none;">
+      <div id="dynamic-details-quadro" class="task-quadro task-col-item" style="display: none; flex-direction: column;">
          <p class="placeholder-text">Selecione um documento acima para ver os detalhes.</p>
       </div>
     `;
@@ -1171,8 +1825,9 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
    */
   const atualizarQuadroDocumento = (documentId) => {
     const dynamicQuadro = document.getElementById('dynamic-details-quadro'); // Agora este é o quadro de 3º nível
-    const clickedItem = document.querySelector(`.document-item[data-document-id="${documentId}"]`);
-    const docType = clickedItem ? clickedItem.dataset.type : null;
+    
+    // Busca os dados do documento no mock
+    const doc = getMockDocuments().find(d => d.id.toString() === documentId.toString());
 
     if (!dynamicQuadro) return;
 
@@ -1199,35 +1854,55 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
       filesTableHTML = files.map(file => `
         <tr>
           <td>
-            <div class="file-row-layout"><button class="table-action-btn" title="Alterar informações do arquivo">✏️</button><a href="${file.url}" target="_blank" class="file-link">${file.name}</a><button class="table-action-btn btn-danger-icon" title="Excluir arquivo">🗑️</button></div>
+            <div class="file-row-layout" style="display: flex; align-items: center; gap: 10px;">
+                <button class="table-action-btn" title="Alterar informações do arquivo">✏️</button>
+                <a href="${file.url}" target="_blank" class="file-link" style="flex: 1;">${file.name}</a>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;" title="Visível para o cliente">
+                    <input type="checkbox"> 👁️
+                </label>
+                <button class="table-action-btn btn-danger-icon" title="Excluir arquivo">🗑️</button>
+            </div>
           </td>
         </tr>`).join('');
+    } else {
+      filesTableHTML = '<tr><td class="text-muted" style="text-align:center; padding: 10px;">Nenhum arquivo anexado.</td></tr>';
     }
     // --- Fim dos Dados de Demonstração ---
 
-    // Simulação: Monta os detalhes do documento. No futuro, isso virá da API.
-    // Se o documento for do tipo 'attached' (já existe), mostra os detalhes e a lista de arquivos.
-    if (docType === 'attached') {
+    // Se o documento existe (seja anexado ou pendente), mostra os detalhes com a opção de configurar
+    if (doc) {
+      const btnLabel = files.length > 0 ? 'Adicionar Páginas' : 'Anexar Arquivo';
+      // Simula datas preenchidas apenas se já estiver anexado
+      const emissionValue = doc.type === 'attached' ? '2022-05-20' : '';
+      const expiryValue = doc.type === 'attached' ? '2026-05-19' : '';
+
+      const visibilityText = files.length > 0 
+        ? '<p style="font-size: 12px; color: #666; margin-top: 10px; margin-bottom: 5px;">Marque os campos abaixo para que o cliente possa ver o arquivo marcado.</p>'
+        : '';
+
       dynamicQuadro.innerHTML = `
         <div class="quadro-header">
-          <h4>Detalhes do Documento #${documentId}</h4>
-          <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
+          <h4>Detalhes: ${doc.name}</h4>
+          <div class="header-actions">
+            <button id="doc-settings-btn" class="icon-btn" title="Configurações" data-doc-id="${documentId}">⚙️</button>
+            <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
+          </div>
         </div>
           <div class="document-form">
+            <!-- Texto do Memo/Instruções -->
+            <p class="document-instructions-text" style="margin-bottom: 15px; color: #555;"><strong>Instruções:</strong> ${doc.instructions || 'Sem instruções definidas.'}</p>
+            
             <div class="document-form-row">
               <div class="form-field">
                 <label for="doc-emission-date">Data de Emissão:</label>
-                <input type="date" id="doc-emission-date" class="form-input" value="2022-05-20">
+                <input type="date" id="doc-emission-date" class="form-input" value="${emissionValue}">
               </div>
               <div class="form-field">
                 <label for="doc-expiry-date">Data de Validade:</label>
-                <input type="date" id="doc-expiry-date" class="form-input" value="2026-05-19">
+                <input type="date" id="doc-expiry-date" class="form-input" value="${expiryValue}">
               </div>
             </div>
-            <div class="form-field">
-              <label for="doc-type">Tipo do Documento:</label>
-              <input type="text" id="doc-type" class="form-input" value="CNH" placeholder="Digite para buscar...">
-            </div>
+            ${visibilityText}
             <!-- Tabela de Arquivos Anexados -->
             <div class="table-container document-files-table">
               <table class="point-table">
@@ -1235,40 +1910,468 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
               </table>
             </div>
             <div class="document-actions">
-              <button class="page-header-btn">Adicionar Páginas</button>
+              <button class="page-header-btn">${btnLabel}</button>
             </div>
           </div>
       `;
-    } else {
-      // Se for 'required' ou 'optional', mostra um formulário para adicionar o documento.
-      const docName = clickedItem ? clickedItem.querySelector('span').textContent : '';
-      dynamicQuadro.innerHTML = `
-        <div class="quadro-header">
-          <h4>Adicionar Documento: ${docName}</h4>
-          <button class="icon-btn close-dynamic-quadro-btn" title="Fechar">✖</button>
-        </div>
-          <div class="document-form">
-            <div class="document-form-row">
-              <div class="form-field">
-                <label for="doc-emission-date">Data de Emissão:</label>
-                <input type="date" id="doc-emission-date" class="form-input">
-              </div>
-              <div class="form-field">
-                <label for="doc-expiry-date">Data de Validade:</label>
-                <input type="date" id="doc-expiry-date" class="form-input">
-              </div>
-            </div>
-            <div class="form-field">
-              <label for="doc-type">Tipo do Documento:</label>
-              <input type="text" id="doc-type" class="form-input" value="${docName}" readonly>
-            </div>
-            <div class="document-actions">
-              <button class="page-header-btn">Adicionar Documento</button>
-            </div>
-          </div>
-      `;
-    } // fim do if (docType)
+    }
   }; // fim da função atualizarQuadroDocumento
+
+  /**
+   * Renderiza o quadro de configurações/adição de documento.
+   * @param {string|null} documentId - ID do documento para editar, ou null para adicionar novo.
+   */
+  const renderDocumentSettings = (documentId) => {
+    const dynamicQuadro = document.getElementById('dynamic-details-quadro');
+    if (!dynamicQuadro) return;
+
+    // Busca dados se for edição
+    const doc = documentId ? getMockDocuments().find(d => d.id.toString() === documentId.toString()) : null;
+    const isEdit = !!doc;
+
+    const title = isEdit ? `Configurar Documento #${documentId}` : 'Novo Documento';
+    const docName = doc ? doc.name : '';
+    const docInstructions = doc ? doc.instructions : '';
+    const docValidity = doc ? doc.validityDays : '';
+    const isMandatory = doc ? doc.isMandatory : false;
+
+    // Gera as opções do select agrupadas por categoria
+    const catalog = getDocumentCatalog();
+    let optionsHTML = '<option value="">Selecione um tipo...</option>';
+    
+    for (const [category, items] of Object.entries(catalog)) {
+      optionsHTML += `<optgroup label="${category}">`;
+      items.forEach(item => {
+        // Verifica se é o item selecionado (comparando por nome simples para este exemplo)
+        const isSelected = docName === item.label ? 'selected' : '';
+        // Armazena a validade padrão no dataset para uso no JS
+        optionsHTML += `<option value="${item.label}" data-default-validity="${item.validity}" ${isSelected}>${item.label}</option>`;
+      });
+      optionsHTML += `</optgroup>`;
+    }
+    // Adiciona opção "Outros" caso não esteja na lista
+    optionsHTML += `<option value="Outros" ${docName === 'Outros' ? 'selected' : ''}>Outros</option>`;
+
+    dynamicQuadro.style.display = 'flex';
+    dynamicQuadro.innerHTML = `
+      <div class="quadro-header">
+        <h4>${title}</h4>
+        <button class="icon-btn close-dynamic-quadro-btn" title="Fechar" ${isEdit ? `data-back-to="${documentId}"` : ''}>✖</button>
+      </div>
+      <div class="document-form">
+        <div class="form-field">
+          <label for="setting-doc-name">Título do Documento:</label>
+          <input type="text" id="setting-doc-name" class="form-input" value="${docName}">
+        </div>
+        
+        <div class="form-field">
+          <label for="setting-doc-type">Tipo do Documento:</label>
+          <select id="setting-doc-type" class="form-input">
+            ${optionsHTML}
+          </select>
+        </div>
+
+        <div class="document-form-row">
+          <div class="form-field">
+            <label for="setting-doc-validity">Validade (dias):</label>
+            <input type="number" id="setting-doc-validity" class="form-input" value="${docValidity}" placeholder="Ex: 365">
+          </div>
+          <div class="checkbox-container" style="margin-top: 30px;">
+            <input type="checkbox" id="setting-doc-mandatory" ${isMandatory ? 'checked' : ''}>
+            <label for="setting-doc-mandatory">Obrigatório</label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="setting-doc-instructions">Instruções (Manual):</label>
+          <textarea id="setting-doc-instructions" class="form-input memo-area" rows="4" placeholder="Descreva como obter este documento, links úteis, etc...">${docInstructions}</textarea>
+        </div>
+
+        <div class="document-actions" style="justify-content: space-between; display: flex;">
+          ${isEdit ? '<button id="delete-document-btn" class="icon-btn btn-danger-icon" title="Excluir Documento">🗑️</button>' : '<div></div>'}
+          <button class="page-header-btn">Salvar Configurações</button>
+        </div>
+      </div>
+    `;
+
+    // Adiciona listener para atualizar a validade e o nome automaticamente ao mudar o tipo
+    const typeSelect = document.getElementById('setting-doc-type');
+    const validityInput = document.getElementById('setting-doc-validity');
+    const nameInput = document.getElementById('setting-doc-name');
+
+    if (typeSelect) {
+      typeSelect.addEventListener('change', (e) => {
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const defaultValidity = selectedOption.dataset.defaultValidity;
+        
+        if (defaultValidity !== undefined && validityInput) validityInput.value = defaultValidity;
+        if (nameInput && !isEdit) nameInput.value = selectedOption.value; // Preenche nome apenas se for novo
+      });
+    }
+  };
+
+  // --- LÓGICA DO EDITOR DE PROCESSOS (FLUXO) ---
+  const initializeProcessEditor = () => {
+    const container = document.getElementById('process-stream-container');
+    const btnAdd = document.getElementById('btn-add-process-card');
+    const nameInput = document.getElementById('process-name-input');
+    
+    // Simulação: Recupera o ID do processo clicado (armazenado temporariamente ou via URL fictícia)
+    if (nameInput) {
+        const processName = window.currentProcessName || (window.currentProcessId ? window.currentProcessId.replace(/_/g, ' ').toUpperCase() : 'Novo Processo');
+        nameInput.value = processName;
+    }
+
+    let cardCounter = 0;
+
+    // Função para atualizar os comboboxes de seleção de cards (Dependências e Navegação)
+    const updateCardSelects = () => {
+      const cards = document.querySelectorAll('.process-card');
+      const cardOptions = Array.from(cards).map(c => {
+        const id = c.id;
+        const titleInput = c.querySelector('.card-title-input');
+        const title = titleInput && titleInput.value ? titleInput.value : c.querySelector('strong').textContent;
+        return { id, title };
+      });
+
+      // Atualiza selects de dependência
+      document.querySelectorAll('.card-dependency-select').forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Imediata (Ao chegar neste passo)</option>';
+        cardOptions.forEach(opt => {
+            // Evita auto-dependência (tarefa depender dela mesma)
+            if (!select.closest(`#${opt.id}`)) {
+                select.innerHTML += `<option value="${opt.id}">Após: ${opt.title}</option>`;
+            }
+        });
+        select.value = currentVal;
+      });
+
+      // Atualiza selects de navegação (Objetiva)
+      document.querySelectorAll('.card-nav-select').forEach(select => {
+        const currentVal = select.value;
+        select.innerHTML = '<option value="next">Ir para o Próximo</option>';
+        cardOptions.forEach(opt => {
+             if (!select.closest(`#${opt.id}`)) {
+                select.innerHTML += `<option value="${opt.id}">Ir para: ${opt.title}</option>`;
+             }
+        });
+        select.value = currentVal;
+      });
+    };
+
+    // HTML da Configuração da AÇÃO
+    const getActionConfigHTML = (actionType) => {
+      if (actionType === 'task') {
+        return `
+          <div class="task-config-group">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Itens do Checklist:</label>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+              <input type="text" class="form-input new-checklist-input" placeholder="Novo item..." style="flex: 1;">
+              <button class="icon-btn add-checklist-btn" title="Adicionar Item">+</button>
+            </div>
+            <ul class="config-list checklist-list-container" style="list-style: none; padding: 0; margin-bottom: 15px;">
+              <!-- Itens adicionados via JS -->
+            </ul>
+          </div>
+
+          <div class="task-config-group">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Documentos Exigidos:</label>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px; align-items: center;">
+              <input type="text" class="form-input new-doc-name-input" placeholder="Nome do Documento" style="flex: 2;">
+              <input type="number" class="form-input new-doc-validity-input" placeholder="Dias Val." style="width: 70px;" title="Validade em dias">
+              <label style="font-size: 12px;"><input type="checkbox" class="new-doc-mandatory-check"> Obrig.</label>
+              <button class="icon-btn add-doc-btn" title="Adicionar Documento">+</button>
+            </div>
+            <ul class="config-list doc-list-container" style="list-style: none; padding: 0;">
+              <!-- Itens adicionados via JS -->
+            </ul>
+          </div>
+        `;
+      }
+      if (actionType === 'automation') {
+        return `
+          <div class="form-field">
+            <label>Tipo de Automação:</label>
+            <select class="form-input">
+                <option value="email">Enviar E-mail</option>
+                <option value="sms">Enviar SMS</option>
+                <option value="whatsapp">Enviar WhatsApp</option>
+                <option value="api">API Superlógica</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Parâmetros da Ação:</label>
+            <textarea class="form-input" rows="2" placeholder="Ex: Template ID, Endpoint API..."></textarea>
+          </div>
+        `;
+      }
+      return '';
+    };
+
+    // HTML da Configuração da RESPOSTA
+    const getResponseConfigHTML = (responseType, cardId) => {
+        if (responseType === 'objective') {
+            return `
+                <div class="form-field">
+                    <label>Opções de Resposta (Navegação):</label>
+                    <div class="objective-options-list" id="options-list-${cardId}">
+                        <!-- Opções adicionadas dinamicamente -->
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <button class="page-header-btn add-option-btn" style="font-size: 12px;">+ Adicionar Opção</button>
+                        <button class="icon-btn refresh-cards-btn" title="Atualizar Destinos">🔄</button>
+                    </div>
+                </div>
+            `;
+        }
+        return ''; // Numérico e Texto exibem apenas o campo de pergunta padrão
+    };
+
+    const addCard = () => {
+      cardCounter++;
+      const cardId = `process-card-${cardCounter}`;
+      
+      const cardHTML = document.createElement('div');
+      cardHTML.className = 'process-card card-align-left';
+      cardHTML.id = cardId;
+      cardHTML.innerHTML = `
+        <div class="process-card-header">
+          <strong>Etapa #${cardCounter}</strong>
+          <button class="icon-btn btn-danger-icon remove-card-btn" title="Remover Etapa">🗑️</button>
+        </div>
+        <div class="process-card-body">
+          <!-- Cabeçalho do Card -->
+          <div class="form-container">
+            <div class="form-field" style="flex: 0 0 180px;">
+              <label>ID Interno:</label>
+              <input type="text" class="form-input" value="${cardCounter}" disabled style="background-color: #eee; color: #777;">
+            </div>
+            <div class="form-field" style="flex: 1;">
+              <label>Título do Card:</label>
+              <input type="text" class="form-input card-title-input" value="Etapa #${cardCounter}">
+            </div>
+          </div>
+          
+          <!-- Pergunta e Resposta (Opcional) -->
+          <div class="checkbox-container" style="margin-top: 15px; margin-bottom: 5px;">
+            <input type="checkbox" class="enable-question-checkbox">
+            <label style="font-weight: bold;">Perguntas ao usuário (Coleta de Dados)</label>
+          </div>
+
+          <div class="question-section-wrapper" style="display: none; padding-left: 10px; border-left: 3px solid #eee;">
+              <div class="form-field">
+                <label>Texto da Pergunta:</label>
+                <input type="text" class="form-input question-text-input" placeholder="Ex: Quantos imóveis? Qual o tipo?">
+              </div>
+
+              <div class="form-field">
+                <label>Tipo de Resposta:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select class="form-input response-type-select" style="flex: 1;">
+                        <option value="text">Texto (Livre)</option>
+                        <option value="numeric">Número (Digitar)</option>
+                        <option value="objective">Objetiva (Seleção Múltipla)</option>
+                    </select>
+                    <div class="checkbox-container" style="margin: 0;">
+                        <input type="checkbox" class="response-required-checkbox" checked>
+                        <label>Obrigatória</label>
+                    </div>
+                </div>
+              </div>
+              <div class="card-response-config card-type-config" style="display: none;">
+                <!-- Conteúdo dinâmico aqui -->
+              </div>
+          </div>
+
+          <!-- Ação do Card -->
+          <div class="form-field" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <label style="font-weight: bold;">Ação do Card (Execução):</label>
+            <select class="form-input card-action-select">
+              <option value="none">Nenhuma Ação (Apenas Passagem)</option>
+              <option value="task">Criação de Tarefas</option>
+              <option value="automation">Ação / Automação</option>
+            </select>
+          </div>
+          <div class="card-action-config card-type-config" style="display: none;"></div>
+        
+
+        </div>
+      `;
+
+      container.appendChild(cardHTML);
+
+      // Event Listeners do Card
+      const headerTitle = cardHTML.querySelector('.process-card-header strong');
+      const titleInput = cardHTML.querySelector('.card-title-input');
+      
+      const actionSelect = cardHTML.querySelector('.card-action-select');
+      const actionConfig = cardHTML.querySelector('.card-action-config');
+      
+      const questionCheckbox = cardHTML.querySelector('.enable-question-checkbox');
+      const questionWrapper = cardHTML.querySelector('.question-section-wrapper');
+      const responseSelect = cardHTML.querySelector('.response-type-select');
+      const responseConfig = cardHTML.querySelector('.card-response-config');
+      
+      const removeBtn = cardHTML.querySelector('.remove-card-btn');
+
+      // Sincronização de Título -> Header
+      titleInput.addEventListener('input', () => {
+        headerTitle.textContent = titleInput.value || `Etapa #${cardCounter}`;
+      });
+
+      // Mudança de Ação
+      actionSelect.addEventListener('change', () => {
+        const type = actionSelect.value;
+        if (type && type !== 'none') {
+            actionConfig.innerHTML = getActionConfigHTML(type);
+            actionConfig.style.display = 'block';
+            updateCardSelects(); // Atualiza selects recém criados
+        } else {
+            actionConfig.style.display = 'none';
+            actionConfig.innerHTML = '';
+        }
+
+        // Verifica se deve exibir o aviso de Loop (Numérico + Tarefa)
+        if (responseSelect.value === 'numeric') {
+            if (type === 'task') {
+                responseConfig.innerHTML = `<div style="padding: 8px; background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px; color: #0d47a1; margin-top: 10px; font-size: 13px;">
+                    <strong>ℹ️ Loop de Tarefas:</strong> O número digitado neste campo definirá quantas cópias da subtarefa serão criadas.
+                </div>`;
+                responseConfig.style.display = 'block';
+            } else {
+                responseConfig.style.display = 'none';
+                responseConfig.innerHTML = '';
+            }
+        }
+
+      });
+
+      // Toggle Pergunta
+      questionCheckbox.addEventListener('change', () => {
+        questionWrapper.style.display = questionCheckbox.checked ? 'block' : 'none';
+      });
+
+      // Função de Alinhamento
+      const updateAlignment = () => {
+        if (questionCheckbox.checked) {
+            cardHTML.classList.remove('card-align-right');
+            cardHTML.classList.add('card-align-left');
+        } else {
+            cardHTML.classList.remove('card-align-left');
+            cardHTML.classList.add('card-align-right');
+        }
+      };
+      
+      // Atualiza alinhamento apenas ao sair do card (perda de foco)
+      cardHTML.addEventListener('focusout', (e) => {
+        if (!cardHTML.contains(e.relatedTarget)) {
+            updateAlignment();
+        }
+      });
+
+      // Mudança de Tipo de Resposta
+      responseSelect.addEventListener('change', () => {
+        const type = responseSelect.value;
+        if (type === 'objective') {
+            responseConfig.innerHTML = getResponseConfigHTML(type, cardId);
+            responseConfig.style.display = 'block';
+            updateCardSelects(); // Atualiza selects
+            } else if (type === 'numeric' && actionSelect.value === 'task') {
+            responseConfig.innerHTML = `<div style="padding: 8px; background-color: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px; color: #0d47a1; margin-top: 10px; font-size: 13px;">
+                <strong>ℹ️ Loop de Tarefas:</strong> O número digitado neste campo definirá quantas cópias da subtarefa serão criadas.
+            </div>`;
+            responseConfig.style.display = 'block';
+        } else {
+            responseConfig.style.display = 'none';
+            responseConfig.innerHTML = '';
+        }
+      });
+
+      // Delegação de eventos para botões dinâmicos dentro do card
+      cardHTML.addEventListener('click', (e) => {
+        // Botão Atualizar (Refresh)
+        if (e.target.closest('.refresh-cards-btn')) {
+            updateCardSelects();
+        }
+        
+        // Botão Adicionar Opção (Objetiva)
+        if (e.target.classList.contains('add-option-btn')) {
+            const list = cardHTML.querySelector('.objective-options-list');
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'form-container';
+            optionDiv.style.marginBottom = '5px';
+            optionDiv.innerHTML = `
+                <input type="text" class="form-input" placeholder="Opção (ex: Sim)" style="flex: 2;">
+                <select class="form-input card-nav-select" style="flex: 1;">
+                    <option value="next">Ir para o Próximo</option>
+                </select>
+                <button class="icon-btn btn-danger-icon remove-opt-btn" style="width: 34px;">🗑️</button>
+            `;
+            list.appendChild(optionDiv);
+            
+            // Remove opção
+            optionDiv.querySelector('.remove-opt-btn').addEventListener('click', () => optionDiv.remove());
+            
+            updateCardSelects(); // Popula o select recém criado
+        }
+
+        // Botão Adicionar Item Checklist (Config Tarefa)
+        if (e.target.classList.contains('add-checklist-btn')) {
+            const container = e.target.closest('.task-config-group');
+            const input = container.querySelector('.new-checklist-input');
+            const list = container.querySelector('.checklist-list-container');
+            
+            if (input.value.trim()) {
+                const li = document.createElement('li');
+                li.style.cssText = "display: flex; justify-content: space-between; background: #fff; padding: 5px; margin-bottom: 2px; border: 1px solid #eee;";
+                li.innerHTML = `<span>${input.value}</span> <button class="icon-btn btn-danger-icon remove-item-btn" style="width: 24px; height: 24px; font-size: 12px;">🗑️</button>`;
+                list.appendChild(li);
+                input.value = '';
+                
+                li.querySelector('.remove-item-btn').addEventListener('click', () => li.remove());
+            }
+        }
+
+        // Botão Adicionar Documento (Config Tarefa)
+        if (e.target.classList.contains('add-doc-btn')) {
+            const container = e.target.closest('.task-config-group');
+            const nameInput = container.querySelector('.new-doc-name-input');
+            const validityInput = container.querySelector('.new-doc-validity-input');
+            const mandatoryCheck = container.querySelector('.new-doc-mandatory-check');
+            const list = container.querySelector('.doc-list-container');
+            
+            if (nameInput.value.trim()) {
+                const li = document.createElement('li');
+                const isMandatory = mandatoryCheck.checked;
+                const validity = validityInput.value ? `${validityInput.value} dias` : 'Indet.';
+                
+                li.style.cssText = "display: flex; justify-content: space-between; background: #fff; padding: 5px; margin-bottom: 2px; border: 1px solid #eee;";
+                li.innerHTML = `
+                    <span>${nameInput.value} <small class="text-muted">(${validity})</small> ${isMandatory ? '<span style="color:red; font-weight:bold;">*</span>' : ''}</span> 
+                    <button class="icon-btn btn-danger-icon remove-item-btn" style="width: 24px; height: 24px; font-size: 12px;">🗑️</button>`;
+                list.appendChild(li);
+                nameInput.value = '';
+                validityInput.value = '';
+                mandatoryCheck.checked = false;
+                
+                li.querySelector('.remove-item-btn').addEventListener('click', () => li.remove());
+            }
+        }
+
+      });
+
+      // Remover Card
+      removeBtn.addEventListener('click', () => {
+        if (confirm('Remover esta etapa do fluxo?')) {
+            cardHTML.remove();
+            updateCardSelects(); // Atualiza referências em outros cards
+        }
+      });
+    };
+
+    if (btnAdd) btnAdd.addEventListener('click', addCard);
+  };
 
   /**
    * Encontra grupos de botões e iguala a largura de todos eles com base no mais largo do grupo.
@@ -1308,6 +2411,11 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     button.addEventListener('click', () => {
       const page = button.dataset.page;
       if (!page) return; // Ignora botões sem data-page
+
+      // Se for um botão de processo, podemos salvar o ID no window para usar no editor
+      if (button.dataset.processId) {
+        // window.currentProcessId = button.dataset.processId; // Exemplo de uso futuro
+      }
       
       // Atualiza o estado ativo e carrega a página
       navButtons.forEach(btn => btn.classList.remove('active'));

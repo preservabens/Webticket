@@ -1,0 +1,27 @@
+<div class="page-header">
+  <div class="page-title-group">
+    <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
+    <h2>Editor de Fluxo</h2>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="page-header-btn" id="btn-save-process">Salvar Fluxo</button>
+    <button type="button" class="page-header-btn" data-page="processos.html">Voltar</button>
+  </div>
+</div>
+
+<div class="form-field" style="margin-bottom: 20px;">
+  <label for="process-name-input" style="font-weight: bold;">Nome do Fluxo:</label>
+  <input type="text" id="process-name-input" class="form-input" placeholder="Nome do Processo" style="font-size: 16px; font-weight: bold;">
+</div>
+
+<p>Configure a esteira de etapas deste processo. Defina perguntas, tarefas e automações.</p>
+<br>
+
+<!-- Container da Esteira (Stream) -->
+<div id="process-stream-container" class="process-stream">
+  <!-- Os cards serão injetados aqui via JavaScript -->
+</div>
+
+<div class="add-card-container">
+  <button type="button" id="btn-add-process-card" class="tile" style="min-height: 60px; width: 100%;">+ Adicionar Nova Etapa (Card)</button>
+</div>

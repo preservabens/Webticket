@@ -1,21 +1,40 @@
-# Tela de Processos (`processos.html`)
+# Documentação da Tela de Processos (`processos.html` e `editor_fluxo.html`)
 
-Este documento detalha o funcionamento e o propósito da tela de Processos.
+A tela de processos foi reformulada para funcionar como um **Construtor de Fluxos de Trabalho**. Em vez de apenas listar links estáticos, ela permite configurar a "esteira" de cada processo de negócio (Venda, Locação, etc.).
 
-## 1. Propósito
+## 1. Visão Geral (Lista)
+A tela inicial (`processos.html`) lista os grupos de processos disponíveis (Colaboradores, Condomínios, Locação, Venda). Ao clicar em um botão (ex: "Nova Venda"), o sistema abre o **Editor de Fluxo**.
 
-A tela de "Processos" funciona como um **hub de navegação centralizado** para iniciar os diversos fluxos de trabalho e processos de negócio da empresa. Em vez de ter dezenas de itens de menu, esta tela agrupa as ações por categoria, facilitando a localização.
+## 2. Editor de Fluxo (`editor_fluxo.html`)
 
-**Analogia Desktop:** Pense nesta tela como um "menu principal" de um sistema ERP, onde as opções são agrupadas por módulos (Cadastros, Financeiro, RH, etc.).
+Esta tela permite configurar o passo a passo do processo. O fluxo é visualizado como uma lista vertical de **Cards**, onde cada card representa uma etapa ou automação.
 
-## 2. Estrutura
+### 2.1. Estrutura do Card (Estilo Google Forms)
+Cada card possui um **ID Interno** sequencial (exibido apenas como número inteiro, ex: "1") e um **Título** editável. O conteúdo é dividido em duas seções principais:
 
-A tela é organizada utilizando o componente **Accordion**. Cada título de accordion representa uma grande área da empresa (ex: Cadastros, Colaboradores, Condomínios, Locação, Venda).
+1.  **Perguntas ao usuário (Opcional):** Define a interação com o usuário para coletar dados ou decidir o fluxo. Ativado via checkbox.
+    *   **Texto da Pergunta:** A instrução exibida ao usuário.
+    *   **Tipo de Resposta:**
+        *   **Texto:** Campo livre.
+        *   **Número:** Campo numérico. Se combinado com a ação "Criação de Tarefas", ativa o **Loop de Tarefas** (cria X cópias da tarefa baseadas no número digitado).
+        *   **Objetiva:** Múltipla escolha. Permite definir **Navegação** (Ir para o Próximo ou Ir para Card X) baseada na resposta escolhida.
+    *   **Obrigatória:** Checkbox que define se o usuário é obrigado a responder para avançar.
+    *   **Log Automático:** As perguntas e respostas coletadas durante o fluxo são salvas automaticamente no **Resumo** e no **Log Inicial** da tarefa criada.
 
-Dentro de cada grupo, os botões (`.page-header-btn`) representam os processos específicos que o usuário pode iniciar.
+2.  **Ação do Card:** Define o que o sistema fará nesta etapa.
+    *   **Nenhuma Ação:** O card serve apenas para coletar informações ou guiar o fluxo.
+    *   **Criação de Tarefas:** Gera uma tarefa humana. Permite configurar dinamicamente:
+        *   **Checklist:** Adição de itens linha a linha.
+        *   **Documentos:** Adição de documentos exigidos com definição de validade (dias) e obrigatoriedade.
+    *   **Ação / Automação:** Executa uma ação de sistema (E-mail, SMS, API).
 
-## 3. Regras de Negócio
+### 2.2. Dependências e Navegação
 
-*   **Navegação:** Cada botão possui um atributo `data-page` que indica o arquivo HTML da subpágina a ser carregada. A lógica em `main.js` cuida de carregar o conteúdo correspondente na área principal.
-*   **Ordenação:** Para garantir consistência e facilidade de localização, os botões dentro de cada grupo de accordion devem ser mantidos em **ordem alfabética**.
-*   **Estilo:** A função `equalizeButtonWidths()` em `main.js` é chamada após o carregamento desta página para garantir que todos os botões dentro de um mesmo grupo tenham a mesma largura, criando um alinhamento visual agradável.
+*   **Dependência (Na Ação de Tarefa):** Substitui o antigo "Nível de Tarefa". Você seleciona explicitamente qual card anterior deve ser concluído para liberar a tarefa atual.
+*   **Navegação (Na Resposta Objetiva):** Permite pular etapas ou criar ramificações no processo.
+*   **Botão Atualizar (🔄):** Usado para recarregar as listas de cards nos comboboxes de seleção quando novos cards são adicionados.
+
+### 2.3. Alinhamento Visual
+Para facilitar a leitura do fluxo, os cards possuem alinhamento automático:
+*   **Alinhado à Esquerda:** Cards que possuem **Perguntas** ativas (interação com usuário).
+*   **Alinhado à Direita:** Cards de **Ação Pura** (sem perguntas), indicando processamento ou tarefas de sistema.

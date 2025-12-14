@@ -1,0 +1,64 @@
+<style>
+  /* Estilos específicos para a tela de Cadastros */
+  .tabs-nav {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+  .tab-btn {
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    color: #666;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #333; }
+  .tab-btn.active {
+    border-bottom-color: #007bff;
+    color: #007bff;
+  }
+  
+  .tab-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-bar-container {
+    display: none; /* Oculto por padrão */
+    flex-grow: 1;
+    min-width: 200px;
+  }
+  
+  .cadastro-list { display: flex; flex-direction: column; gap: 8px; }
+  .cadastro-item {
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .cadastro-item:hover { background-color: #f8f9fa; }
+  .pagination-info { margin-top: 15px; font-size: 0.9em; color: #666; text-align: center; }
+</style>
+
+<div class="page-header">
+  <div class="page-title-group">
+    <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
+    <h2>Cadastros</h2>
+  </div>
+</div>
+
+<!-- Container que será gerenciado pelo JS -->
+<div id="cadastros-view-container">
+  <!-- O conteúdo (abas, lista ou formulário) será injetado aqui -->
+  <p class="text-muted">Carregando cadastros...</p>
+</div>

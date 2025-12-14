@@ -418,22 +418,14 @@ h2 { font-size: 24px; }
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 .search-controls .form-input {
     flex: 1;
+    min-width: 200px;
 }
 
 @media (max-width: 768px) {
-    .search-controls {
-        flex-direction: column;
-    }
-    .search-controls .form-input, 
-    .search-controls button,
-    .search-controls .page-header-btn {
-        width: 100%;
-        flex: none;
-    }
-    
     .page-header {
         flex-direction: column;
         align-items: stretch;
@@ -484,6 +476,12 @@ h2 { font-size: 24px; }
 .subtask-item.selected, .document-item.selected {
     border-left: 4px solid var(--accent-color);
     background-color: #f0f2f7;
+}
+
+.subtask-item.blocked {
+    background-color: #f5f5f5;
+    color: #aaa;
+    cursor: not-allowed;
 }
 
 .item-status {
@@ -819,4 +817,206 @@ body.login-layout h1 {
     .container {
         width: 90%;
     }
+}
+
+/* --- Process Editor (Esteira) --- */
+.process-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+/* Linha conectora da esteira */
+.process-stream::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 20px; /* Metade da largura do ícone/marcador se houver */
+    width: 2px;
+    background-color: #ccc;
+    z-index: 0;
+}
+
+.process-card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 15px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 600px;
+    transition: all 0.3s ease;
+}
+
+/* Alinhamento dos Cards no Fluxo */
+.process-card.card-align-left {
+    align-self: flex-start;
+    margin-left: 20px; /* Espaço da linha */
+}
+
+.process-card.card-align-right {
+    align-self: flex-end;
+    margin-right: 20px;
+    border-left: 4px solid var(--primary-bg); /* Destaque visual para ações puras */
+}
+
+.process-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    background-color: #f9f9f9;
+    margin: -15px -15px 15px -15px;
+    padding: 10px 15px;
+    border-radius: 6px 6px 0 0;
+}
+
+.process-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-type-config {
+    background-color: #f0f4f8;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #e1e4e8;
+    margin-top: 10px;
+}
+
+/* --- Botões de Processos (Multilinha) --- */
+.process-btn {
+    white-space: normal !important;
+    height: auto !important;
+    min-height: 54px;
+    width: 40ch;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* --- Botão de Ajuda Global --- */
+.global-help-btn {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--primary-bg);
+    color: #fff;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 2000; /* Acima do sidebar e overlays */
+    transition: transform 0.2s;
+}
+
+.global-help-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    .process-card {
+        max-width: 100%;
+        align-self: stretch !important;
+        margin-left: 10px !important;
+        margin-right: 0 !important;
+    }
+    .global-help-btn {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* --- Modal de Instruções --- */
+.modal-overlay {
+  display: none; /* Oculto por padrão */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro transparente */
+  z-index: 2000; /* Acima de tudo */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-container {
+  background-color: #fff;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 6px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h4 {
+  margin: 0;
+}
+
+.modal-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* --- Botões de Ação em Tabelas/Listas --- */
+.table-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    color: #555;
+}
+.table-action-btn:hover {
+    background-color: #eee;
+    color: #333;
+}
+
+.btn-danger-icon {
+    color: #d9534f;
+}
+.btn-danger-icon:hover {
+    background-color: #f2dede;
+    color: #c9302c;
+}
+
+/* --- Temas de Ticket (Cores de Fundo) --- */
+.task-details-container.ticket-interno .form-input:not(.input-error):not(.input-warning) {
+    background-color: #FCF8EC;
+}
+
+.task-details-container.ticket-externo .form-input:not(.input-error):not(.input-warning) {
+    background-color: #F1F2F3;
 }

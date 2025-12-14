@@ -20,14 +20,13 @@ Esta seção implementa uma busca em múltiplas etapas para guiar o usuário.
 
 *   **Etapa 1: Busca Inicial**
     *   O usuário digita um termo no campo de busca e clica em "Buscar".
-    *   O sistema exibe duas tabelas: "Processos" (clientes, imóveis, etc.) e "Tarefas" (chamados).
+    *   O sistema exibe uma **lista de resultados** agrupada por Processos (clientes, imóveis, etc.) utilizando itens expansíveis.
 
-*   **Etapa 2: Seleção de Processo (Opcional)**
-    *   O usuário pode clicar em uma linha na tabela de **Processos**.
-    *   **Regra:** Ao fazer isso, a tabela de **Tarefas** é filtrada para mostrar **todos** os chamados daquele processo, ordenados com os ativos mais recentes primeiro, seguidos pelos finalizados mais recentes. A seleção na tabela de tarefas é limpa.
+*   **Etapa 2: Visualização de Tarefas**
+    *   Ao clicar no nome de um cliente/processo, o item se expande revelando **cards** com as tarefas associadas àquele processo.
 
 *   **Etapa 3: Seleção de Tarefa**
-    *   O usuário clica em uma linha na tabela de **Tarefas**.
+    *   O usuário clica em um **card de tarefa**.
     *   **Regra:** O sistema exibe uma terceira área (`#search-final-details`) com um resumo dos detalhes da tarefa selecionada e habilita o botão "Trabalhar com esse chamado".
 
 *   **Etapa 4: Carregar Tarefa**
@@ -37,7 +36,7 @@ Esta seção implementa uma busca em múltiplas etapas para guiar o usuário.
 
 ## 3. Accordion "Lista de Tarefas"
 
-*   **Propósito:** Fornece uma visão geral de todas as tarefas pendentes do usuário.
+*   **Propósito:** Fornece uma visão geral de todas as tarefas pendentes do usuário em formato de **Cards**.
 *   **Ordenação:** A lista é ordenada pela **Data Fictícia** (ver `Regras_de_Negocio_Chave.md`).
 *   **Regra Visual:** Datas de conclusão que já passaram (tarefas atrasadas) são exibidas na cor vermelha.
 *   **Interação:** Clicar em qualquer tarefa da lista irá carregá-la diretamente na seção "Tarefa Selecionada".
@@ -98,3 +97,12 @@ Aparece ao selecionar um documento.
 *   **Adicionar Movimentação:** Área para registrar novas informações e andamentos na tarefa.
 *   **Histórico de Movimentações:** Exibe o histórico de comentários e atualizações manuais.
 *   **Log do Sistema:** Exibe um log automático de todas as ações realizadas na tarefa (criação, alteração, etc.).
+
+## Regras Obsoletas ou Modificadas
+
+### Fluxo de Busca com Tabelas (Substituído por Cards/Accordion)
+*   **Etapa 1 (Antiga):** O sistema exibia duas tabelas: "Processos" (clientes, imóveis, etc.) e "Tarefas" (chamados).
+*   **Etapa 2 (Antiga):** O usuário podia clicar em uma linha na tabela de **Processos**.
+*   **Regra (Antiga):** Ao fazer isso, a tabela de **Tarefas** era filtrada para mostrar **todos** os chamados daquele processo, ordenados com os ativos mais recentes primeiro, seguidos pelos finalizados mais recentes. A seleção na tabela de tarefas era limpa.
+*   **Etapa 3 (Antiga):** O usuário clicava em uma linha na tabela de **Tarefas**.
+*   *Motivo da mudança:* A estrutura de tabelas causava travamentos em navegadores móveis (Android). Substituído por lista expansível e cards para melhor performance e UX mobile.

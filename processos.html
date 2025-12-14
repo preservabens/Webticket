@@ -2,85 +2,42 @@
   <div class="page-title-group">
     <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
     <h2>Processos</h2>
+    <button type="button" class="icon-btn" title="Adicionar Novo Processo" data-page="processos/editor_fluxo.html" data-process-id="novo_processo" style="margin-left: 10px;">+</button>
   </div>
 </div>
 <p>Acompanhe os processos internos e fluxos de trabalho.</p>
 <br>
 
-<div class="accordion-container">
-  <!-- Grupo Cadastros -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Cadastros</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" class="page-header-btn" data-page="processos/cadastros_condominio.html">Condomínio</button>
-        <button type="button" class="page-header-btn">Contratos de locação</button>
-        <button type="button" class="page-header-btn">Contratos de venda</button>
-        <button type="button" class="page-header-btn">Feriados</button>
-        <button type="button" class="page-header-btn">Imóvel</button>
-        <button type="button" class="page-header-btn">Pessoa</button>
-        <button type="button" class="page-header-btn">Planos de horários (ponto)</button>
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Colaboradores -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Colaboradores</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" class="page-header-btn">Acompanhamento</button>
-        <button type="button" class="page-header-btn">Contratação</button>
-        <button type="button" class="page-header-btn">Rescisão</button>
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Condomínios -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Condomínios</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" class="page-header-btn">Colaboradores - Contratação</button>
-        <button type="button" class="page-header-btn">Colaboradores - Desligamento</button>
-        <button type="button" class="page-header-btn">Contestação de Boleto</button>
-        <button type="button" class="page-header-btn">Declarações</button>
-        <button type="button" class="page-header-btn">Desligamento de Condomínio</button>
-        <button type="button" class="page-header-btn">Desligamento de Morador</button>
-        <button type="button" class="page-header-btn">Inadimplência</button>
-        <button type="button" class="page-header-btn">Nova Previsão Orçamentária</button>
-        <button type="button" class="page-header-btn">Novo condomínio</button>
-        <button type="button" class="page-header-btn">Novo morador</button>
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Locação -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Locação</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" class="page-header-btn">Alteração Contrato</button>
-        <button type="button" class="page-header-btn">Contestação de Boleto</button>
-        <button type="button" class="page-header-btn">Declarações</button>
-        <button type="button" class="page-header-btn">Inadimplencia</button>
-        <button type="button" class="page-header-btn">Manutenção</button>
-        <button type="button" class="page-header-btn">Nova Locação</button>
-        <button type="button" class="page-header-btn">Outro</button>
-        <button type="button" class="page-header-btn">Renovação</button>
-        <button type="button" class="page-header-btn">Rescisão</button>
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Venda -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Venda</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" class="page-header-btn">Nova venda</button>
-        <button type="button" class="page-header-btn">Pós venda</button>
-      </div>
-    </div>
-  </details>
+<div class="search-controls">
+  <!-- Colaboradores -->
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="colab_acompanhamento">Colaboradores - Acompanhamento</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="colab_contratacao">Colaboradores - Contratação</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="colab_rescisao">Colaboradores - Rescisão</button>
+  
+  <!-- Condomínios -->
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_contratacao">Condomínios - Colaboradores - Contratação</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_desligamento">Condomínios - Colaboradores - Desligamento</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_contestacao">Condomínios - Contestação de Boleto</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_declaracoes">Condomínios - Declarações</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_desligamento_cond">Condomínios - Desligamento de Condomínio</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_desligamento_morador">Condomínios - Desligamento de Morador</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_inadimplencia">Condomínios - Inadimplência</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_previsao">Condomínios - Nova Previsão Orçamentária</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_novo">Condomínios - Novo condomínio</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="cond_novo_morador">Condomínios - Novo morador</button>
+  
+  <!-- Locação -->
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_alteracao">Locação - Alteração Contrato</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_contestacao">Locação - Contestação de Boleto</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_declaracoes">Locação - Declarações</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_inadimplencia">Locação - Inadimplencia</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_manutencao">Locação - Manutenção</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_nova">Locação - Nova Locação</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_outro">Locação - Outro</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_renovacao">Locação - Renovação</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="loc_rescisao">Locação - Rescisão</button>
+  
+  <!-- Venda -->
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="venda_nova">Venda - Nova venda</button>
+  <button type="button" class="page-header-btn process-btn" data-page="processos/editor_fluxo.html" data-process-id="venda_pos">Venda - Pós venda</button>
 </div>

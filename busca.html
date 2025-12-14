@@ -1,0 +1,132 @@
+<style>
+  /* Estilos para a lista de tarefas e busca (Cards/Accordion) */
+  .custom-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .custom-list-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    overflow: hidden;
+  }
+  .custom-list-summary {
+    padding: 15px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+  }
+  .custom-list-summary::-webkit-details-marker {
+    display: none;
+  }
+  .custom-list-summary:hover {
+    background-color: #f0f0f0;
+  }
+  .summary-info strong {
+    display: block;
+    font-size: 1.1em;
+    color: #333;
+  }
+  .summary-info small {
+    color: #666;
+  }
+  .custom-list-content {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background-color: #fff;
+  }
+  .task-card {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+  .task-card:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .task-card.selected {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #555;
+  }
+  .card-title {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #000;
+  }
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #777;
+  }
+  .arrow-icon {
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details[open] .arrow-icon {
+    transform: rotate(180deg);
+  }
+  #search-final-details {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  .text-danger { color: #dc3545; }
+  .text-muted { color: #6c757d; }
+</style>
+
+<div class="page-header">
+  <div class="page-title-group">
+    <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
+    <h2>Busca e Listas</h2>
+  </div>
+</div>
+<p>Localize processos ou visualize sua lista de tarefas pendentes.</p>
+<br>
+
+<div class="accordion-container">
+  <!-- Grupo de Busca -->
+  <details class="accordion-group" open>
+    <summary class="accordion-title">Busca</summary>
+    <div class="accordion-content">
+      <div class="search-controls">
+        <input type="text" id="search-input" class="form-input" placeholder="Digite o ID, título ou parte do resumo da tarefa...">
+        <button type="button" id="btn-buscar" class="page-header-btn">Buscar</button>
+      </div>
+
+      <!-- Resultados da Busca -->
+      <div id="search-results-processos" class="search-step" style="display: none;">
+        <h5>Resultados da Busca:</h5>
+        <div class="custom-list-container">
+          <!-- Os resultados serão preenchidos via JavaScript -->
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Grupo Lista de Tarefas -->
+  <details class="accordion-group">
+    <summary class="accordion-title" data-section="lista-tarefas">Lista de Tarefas</summary>
+    <div class="accordion-content">
+      <div class="search-controls">
+        <button type="button" id="btn-proxima-tarefa-accordion" class="page-header-btn">Próxima Tarefa</button>
+      </div>
+      <div id="main-task-list" class="custom-list-container"></div>
+    </div>
+  </details>
+</div>

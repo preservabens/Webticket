@@ -1,3 +1,56 @@
+<style>
+  /* Estilos específicos da tela de Tarefas */
+  .text-danger {
+    color: #dc3545;
+  }
+  .text-muted {
+    color: #6c757d;
+  }
+  .text-success {
+    color: #28a745;
+  }
+  .text-orange {
+    color: #fd7e14;
+  }
+  /* Estilos para as tags de status */
+  .item-status {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+    display: inline-block;
+    line-height: 1.2;
+  }
+  .status-valid, .status-completed {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .status-warning {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  .status-expired {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  .status-obrigatorio {
+    background-color: #ffecb3;
+    color: #ff6f00;
+  }
+  .status-opcional {
+    background-color: #e2e3e5;
+    color: #383d41;
+  }
+  .status-pending {
+    background-color: #cce5ff;
+    color: #004085;
+  }
+  /* Remove os pontos (bullets) da lista de checklist */
+  .checklist-container {
+    list-style-type: none;
+    padding-left: 0;
+  }
+</style>
 <div class="page-header">
   <div class="page-title-group">
     <button type="button" class="page-header-btn page-menu-toggle-btn">☰</button>
@@ -6,128 +59,8 @@
   <button type="button" id="btn-proxima-tarefa" class="page-header-btn">Próxima Tarefa</button>
 </div>
 <p>Gerencie suas tarefas diárias e acompanhe o progresso.</p>
-<br>
 
-<div class="accordion-container">
-  <!-- Grupo de Busca -->
-  <details class="accordion-group">
-    <summary class="accordion-title">Busca</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <input type="text" id="search-input" class="form-input" placeholder="Digite o ID, título ou parte do resumo da tarefa...">
-        <button type="button" id="btn-buscar" class="page-header-btn">Buscar</button>
-      </div>
-
-      <!-- Tabela 1: Processos (inicialmente oculta) -->
-      <div id="search-results-processos" class="search-step" style="display: none;">
-        <h5>1. Selecione o Processo:</h5>
-        <div class="table-container">
-          <table class="point-table">
-            <thead>
-              <tr>
-                <th class="col-nome">Nome</th>
-                <th class="col-endereco">Endereço</th>
-                <th class="col-tipo">Tipo</th>
-                <th class="col-relacao">Relação</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-process-id="1">
-                <td><a href="#" class="table-link" data-process-id="1">Fulano de Tal</a></td>
-                <td>Rua Xxxxx</td>
-                <td>Imóvel</td>
-                <td>Locatário</td>
-              </tr>
-              <tr data-process-id="2">
-                <td><a href="#" class="table-link" data-process-id="2">Ciclano de Tal</a></td>
-                <td>Rua yyyyy</td>
-                <td>Pessoa Física</td>
-                <td>Lead</td>
-              </tr>
-              <tr data-process-id="3">
-                <td><a href="#" class="table-link" data-process-id="3">Beltrano de Tal</a></td>
-                <td>Rua zzzzzz</td>
-                <td>Pessoa Jurídica</td>
-                <td>Fornecedor</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tabela 2: Tarefas do Processo (inicialmente oculta) -->
-      <div id="search-results-tarefas" class="search-step" style="display: none;">
-        <h5>2. Selecione a Tarefa:</h5>
-        <div class="table-container">
-          <table class="point-table">
-            <thead>
-              <tr>
-                <th class="col-codigo">Codigo</th>
-                <th class="col-data">Data</th>
-                <th class="col-tipo">Tipo</th>
-                <th class="col-titulo">Titulo</th>
-                <th class="col-relacao">Relação</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-task-id="1245">
-                <td><a href="#" class="table-link" data-task-id="1245">1245</a></td>
-                <td><span class="text-danger">05/12/2025</span></td>
-                <td>Manutenção</td>
-                <td>Vazamento de Gás</td>
-                <td>Condomínio Mormar</td>
-              </tr>
-              <tr data-task-id="1472">
-                <td><a href="#" class="table-link" data-task-id="1472">1472</a></td>
-                <td>05/12/2027</td>
-                <td>Boletos</td>
-                <td>Taxa a maior lançada</td>
-                <td>Condomínio Mormar</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <br>
-        <button type="button" id="btn-trabalhar-chamado" class="page-header-btn" data-task-id="1466" style="display: none;">Trabalhar com esse chamado</button>
-      </div>
-
-      <!-- Detalhes Finais (inicialmente ocultos) -->
-      <div id="search-final-details" class="search-step" style="display: none;">
-        <!-- O conteúdo detalhado da tarefa será injetado aqui pelo JS -->
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Lista de Tarefas -->
-  <details class="accordion-group">
-    <summary class="accordion-title" data-section="lista-tarefas">Lista de Tarefas</summary>
-    <div class="accordion-content">
-      <div class="search-controls">
-        <button type="button" id="btn-proxima-tarefa-accordion" class="page-header-btn">Próxima Tarefa</button>
-      </div>
-      <div class="table-container">
-        <table class="point-table">
-          <thead>
-            <tr>
-              <th class="col-codigo">Código</th>
-              <th class="col-prioridade-icon" title="Prioridade">🚨</th>
-              <th class="col-data">Data</th>
-              <th class="col-tipo">Tipo</th>
-              <th class="col-titulo">Título</th>
-              <th class="col-relacao">Relação</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- O conteúdo da tabela será preenchido dinamicamente -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </details>
-
-  <!-- Grupo Tarefa Selecionada -->
-  <details class="accordion-group" open>
-    <summary class="accordion-title" data-section="tarefa-selecionada">Tarefa Selecionada</summary>
-    <div class="accordion-content"></div>
-  </details>
+<!-- Container principal onde os detalhes da tarefa serão renderizados -->
+<div id="task-view-container">
+  <p class="text-muted">Carregando tarefa...</p>
 </div>

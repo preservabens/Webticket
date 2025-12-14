@@ -57,6 +57,44 @@ Um modal genérico é criado dinamicamente pelo `main.js` e pode ser chamado de 
 *   **Lógica:** O JavaScript captura o clique, insere o conteúdo HTML desejado no corpo do modal (`#modal-content`) e o exibe.
 *   **Fechamento:** O modal pode ser fechado clicando no botão "✖" ou na área escura do overlay.
 
+## 7. Listas Expansíveis e Cards (Mobile-First)
+
+Para exibir listas de dados hierárquicos (ex: Cliente -> Tarefas) de forma performática em dispositivos móveis, deve-se evitar o uso de tabelas complexas ou aninhadas.
+
+*   **Estrutura:** Utilize o elemento `<details>` para o item pai (Resumo do Processo/Cliente).
+*   **Conteúdo:** Utilize **Cards** (`div.task-card`) dentro do item expandido para mostrar os itens filhos (Tarefas).
+*   **Estilo:** Os cards devem ter área de clique clara e feedback visual (`box-shadow` ou mudança de cor) ao passar o mouse ou selecionar.
+*   **Performance:** Este padrão evita o recálculo custoso de layout de tabelas grandes, prevenindo travamentos em dispositivos Android.
+
+## 8. Padrão de Listagem e Carregamento (Load More)
+
+Para otimizar a performance e a experiência do usuário em listas longas, o sistema adota o padrão de "Carregar Mais" em detrimento da paginação tradicional (Página 1, 2, 3...).
+
+*   **Limite Inicial:** As listas devem carregar inicialmente um número limitado de itens (ex: 50) para garantir renderização rápida.
+*   **Controles de Expansão:** Ao final da lista, se houver mais itens, devem ser exibidos botões para expandir a visualização:
+    *   **"Carregar mais 50":** Adiciona o próximo lote de itens à lista atual.
+    *   **"Carregar Tudo":** Carrega todos os itens restantes de uma vez.
+*   **Justificativa:** Este padrão mantém o contexto do usuário (os itens anteriores continuam visíveis) e é mais amigável para interfaces de toque/rolagem.
+
 ## 6. Cabeçalhos e Controles Responsivos
 
 Grupos de controles, como a barra de busca ou o navegador de meses, devem usar `display: flex` e `flex-wrap: wrap`. Em telas pequenas (`<= 768px`), uma `media query` altera o `flex-direction` para `column`, empilhando os controles verticalmente para melhor usabilidade.
+
+## 9. Botão de Ajuda Global
+
+Um botão flutuante (?) está disponível em todas as telas para acesso rápido ao manual ou suporte.
+
+*   **Localização:** Canto superior direito da tela (`fixed`).
+*   **Comportamento:** Permanece visível sobrepondo o conteúdo (`z-index` alto). Ao passar o mouse, sofre uma leve expansão (`scale`) para indicar interatividade.
+
+## 10. Temas de Contexto (Ticket Interno vs Externo)
+
+Para evitar erros operacionais, a interface muda sutilmente de cor dependendo do contexto da tarefa:
+*   **Ticket Interno:** Campos de formulário possuem fundo **Beige (#FCF8EC)**.
+*   **Ticket Externo:** Campos de formulário possuem fundo **Cinza Claro (#F1F2F3)**.
+
+## 11. Indicadores de Visibilidade
+
+Elementos que são visíveis para o cliente final (em portais ou e-mails) devem ser destacados:
+*   **Logs e Histórico:** Texto na cor **Azul Escuro**.
+*   **Arquivos e Checklists:** Ícone de olho (👁️) ou checkbox explícito "Visível para o Cliente".
