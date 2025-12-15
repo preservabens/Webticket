@@ -498,11 +498,15 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
 
   const loadPage = async (page) => {
     // Mostra um feedback de carregamento (opcional, mas bom para UX)
-    contentTarget.innerHTML = '<p>Carregando...</p>';
+    contentTarget.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;"><p>⌛ Carregando...</p></div>';
     try {
-      const response = await fetch(page);
+      // Cache Busting: Adiciona timestamp para evitar que o Android use versões antigas dos arquivos HTML
+      const url = `${page}?_=${new Date().getTime()}`;
+      
+      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Erro ao carregar a página: ${response.statusText}`);
+        const errorInfo = `${response.status} ${response.statusText}`.trim();
+        throw new Error(`O servidor retornou um erro: ${errorInfo}. Verifique se o caminho do arquivo está correto e se o arquivo existe no servidor.`);
       }
       const html = await response.text();
       contentTarget.innerHTML = html;
@@ -529,9 +533,9 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     } catch (error) {
       console.error('Falha no fetch:', error);
       contentTarget.innerHTML = `<div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
-        <h4>Erro ao carregar o conteúdo</h4>
+        <h4>Falha ao Carregar Página</h4>
         <p>${error.message}</p>
-        <small>Página solicitada: ${page}</small>
+        <small>Página solicitada: <strong>${page}</strong></small>
         <div style="margin-top: 10px;"><button class="page-header-btn" onclick="location.reload()">Recarregar Sistema</button></div>
       </div>`;
     }
