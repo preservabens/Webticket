@@ -464,7 +464,8 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
     // Verifica se o clique foi em um botão que carrega uma página (ex: Voltar, ou um tile de processo)
     const targetButton = event.target.closest('[data-page]');
     if (targetButton && !targetButton.classList.contains('nav-btn')) {
-        const page = targetButton.dataset.page;
+        event.preventDefault();
+        const page = targetButton.dataset.page.trim();
         if (page) {
             // Captura o ID do processo se existir
             if (targetButton.dataset.processId) {
@@ -527,7 +528,12 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       }
     } catch (error) {
       console.error('Falha no fetch:', error);
-      contentTarget.innerHTML = '<p>Erro ao carregar o conteúdo. Tente novamente.</p>';
+      contentTarget.innerHTML = `<div style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px;">
+        <h4>Erro ao carregar o conteúdo</h4>
+        <p>${error.message}</p>
+        <small>Página solicitada: ${page}</small>
+        <div style="margin-top: 10px;"><button class="page-header-btn" onclick="location.reload()">Recarregar Sistema</button></div>
+      </div>`;
     }
   };
 
