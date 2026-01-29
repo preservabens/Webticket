@@ -166,6 +166,12 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
       renderDocumentSettings(null); // null indica modo de adição
     }
 
+    // Verifica se o clique foi no botão de Adicionar Subtarefa (+)
+    const addSubtaskBtn = event.target.closest('#add-subtask-btn');
+    if (addSubtaskBtn) {
+      alert('Será mostrado aqui uma lista dos processos (no botão processos) e a tarefa será criada com a estrutura previamente configurada nos processos.\n\nTerá uma opção para se criar uma tarefa avulsa e ir adicionado os itens manualmente.');
+    }
+
     // Verifica se o clique foi no botão de Excluir Documento (Lixeira)
     const deleteDocBtn = event.target.closest('#delete-document-btn');
     if (deleteDocBtn) {
@@ -273,7 +279,8 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
             <input type="checkbox" id="checklist-client-view" ${checkboxDisabled}>
             <label for="checklist-client-view">Cliente pode ver a conclusão do checklist</label>
           </div>
-          <div class="document-actions">
+          <div class="document-actions" style="display: flex; justify-content: space-between;">
+            <button id="delete-checklist-btn" class="icon-btn btn-danger-icon" title="Excluir Item">🗑️</button>
             <button id="save-checklist-btn" class="page-header-btn">Salvar</button>
           </div>
         </div>
@@ -297,6 +304,18 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
           updateModalColors(); // Inicializa com a cor correta
       }
 
+      // Adiciona evento ao botão de excluir
+      const deleteBtn = document.getElementById('delete-checklist-btn');
+      if (deleteBtn) {
+        deleteBtn.onclick = () => {
+            if(confirm('Tem certeza que deseja excluir este item do checklist?')) {
+                listItem.remove();
+                alert('Item excluído (Simulação).');
+                modalOverlay.style.display = 'none';
+            }
+        };
+      }
+
       // Adiciona evento ao botão de salvar (dentro do modal)
       const saveBtn = document.getElementById('save-checklist-btn');
       if (saveBtn) {
@@ -309,6 +328,87 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
         };
       }
     } // fim do if (instructionBtn)
+
+    // Verifica se o clique foi no botão de adicionar item ao checklist (+)
+    const addChecklistBtn = event.target.closest('.add-checklist-item-btn');
+    if (addChecklistBtn) {
+      const modalTitle = document.getElementById('modal-title');
+      if (modalTitle) modalTitle.textContent = 'Novo Item do Checklist';
+
+      const modalContent = document.getElementById('modal-content');
+      
+      // Lógica de permissão baseada no Ticket (Interno/Externo)
+      const ticketTypeSelect = document.getElementById('task-ticket-type');
+      const isTicketInterno = ticketTypeSelect ? ticketTypeSelect.value === 'interno' : true;
+      const checkboxDisabled = isTicketInterno ? 'disabled' : '';
+
+      modalContent.innerHTML = `
+        <div class="document-form">
+          <div class="form-field">
+            <label for="checklist-item-title">Título:</label>
+            <input type="text" id="checklist-item-title" class="form-input" placeholder="Digite o título do item...">
+          </div>
+          <div class="form-field">
+            <label for="checklist-item-memo">Instruções (Memo):</label>
+            <textarea id="checklist-item-memo" class="form-input memo-area" rows="6" placeholder="Instruções para realizar este item..."></textarea>
+            <small class="text-muted">Links inseridos serão suportados na visualização.</small>
+          </div>
+          <div class="checkbox-container" style="margin-top: 10px; display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="checklist-client-view" ${checkboxDisabled}>
+            <label for="checklist-client-view">Cliente pode ver a conclusão do checklist</label>
+          </div>
+          <div class="document-actions" style="display: flex; justify-content: space-between;">
+            <button id="delete-checklist-btn" class="icon-btn btn-danger-icon" title="Cancelar">🗑️</button>
+            <button id="save-checklist-btn" class="page-header-btn">Adicionar</button>
+          </div>
+        </div>
+      `;
+
+      // Exibe o modal.
+      modalOverlay.style.display = 'flex';
+
+      // Lógica de Cores do Modal (Interno/Externo) - Idêntica à visualização
+      const clientViewCheck = document.getElementById('checklist-client-view');
+      const modalInputs = modalContent.querySelectorAll('.form-input');
+      
+      const updateModalColors = () => {
+          const isPublic = clientViewCheck.checked;
+          const color = isPublic ? '#F1F2F3' : '#FCF8EC';
+          modalInputs.forEach(input => input.style.backgroundColor = color);
+      };
+
+      if (clientViewCheck) {
+          clientViewCheck.addEventListener('change', updateModalColors);
+          updateModalColors(); // Inicializa com a cor correta
+      }
+
+      // Adiciona evento ao botão de excluir (Cancelar)
+      const deleteBtn = document.getElementById('delete-checklist-btn');
+      if (deleteBtn) {
+        deleteBtn.onclick = () => {
+           modalOverlay.style.display = 'none';
+        };
+      }
+
+      // Adiciona evento ao botão de salvar (dentro do modal)
+      const saveBtn = document.getElementById('save-checklist-btn');
+      if (saveBtn) {
+        saveBtn.onclick = () => {
+           const newTitle = document.getElementById('checklist-item-title').value;
+           if (!newTitle) { alert('Digite um título.'); return; }
+           
+           // Adiciona o item na lista visualmente (Simulação)
+           const checklistContainer = document.querySelector('.checklist-container');
+           if (checklistContainer) {
+               const newItemHTML = `<li><input type="checkbox"> <label>${newTitle}</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>`;
+               checklistContainer.insertAdjacentHTML('beforeend', newItemHTML);
+           }
+           
+           alert('Item adicionado com sucesso (Simulação).');
+           modalOverlay.style.display = 'none';
+        };
+      }
+    } // fim do if (addChecklistBtn)
 
     // Verifica se o clique foi no botão "Buscar" (na página busca.html)
     if (event.target.id === 'btn-buscar') {
@@ -476,6 +576,28 @@ document.addEventListener('DOMContentLoaded', () => { // Início do DOMContentLo
         }
     }
 
+  });
+
+  // --- DELEGAÇÃO DE EVENTOS DE MUDANÇA (CHANGE) ---
+  contentTarget.addEventListener('change', (event) => {
+    // Verifica se a mudança ocorreu em um checkbox dentro do container de checklist
+    if (event.target.closest('.checklist-container') && event.target.type === 'checkbox') {
+      updateSubtaskStatus();
+    }
+
+    // Verifica se a mudança ocorreu no checkbox de delegação de subtarefa
+    if (event.target.id === 'delegate-subtask-check') {
+      const isChecked = event.target.checked;
+      const select = document.getElementById('delegate-user-select');
+      if (select) select.disabled = !isChecked;
+
+      const selectedSubtask = document.querySelector('.subtask-item.selected');
+      if (selectedSubtask) {
+        // Aplica ou remove a classe visual de "delegada" (amarelo)
+        if (isChecked) selectedSubtask.classList.add('delegated');
+        else selectedSubtask.classList.remove('delegated');
+      }
+    }
   });
 
   /**
@@ -1779,7 +1901,17 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         { label: "Laudo estrutural", validity: 730 }, // 24 meses
         { label: "Laudo elétrico", validity: 365 },
         { label: "Laudo de vistoria", validity: 90 },
-        { label: "Laudo de avaliação", validity: 180 }
+        { label: "Laudo de avaliação", validity: 180 }      
+      ],
+      "Orçamentos e Reparos": [
+        { label: "Nota Fiscal", validity: 0 },
+        { label: "Comprovante de Pagamento", validity: 0 },
+        { label: "Autorização", validity: 0 },
+        { label: "Recibo", validity: 0 },
+        { label: "Orçamento", validity: 30 },
+        { label: "Projeto", validity: 0 },
+        { label: "Contrato", validity: 0 },
+        { label: "Ordem de Serviço", validity: 0 }
       ],
       "Pessoa Física": [
         { label: "RG", validity: 3650 }, // 10 anos
@@ -1811,8 +1943,91 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
         { label: "CND Federal (Receita/PGFN)", validity: 180 },
         { label: "FGTS (CRF)", validity: 30 },
         { label: "Falência e recuperação judicial", validity: 30 }
-      ]
+      ],
+      
     };
+  };
+
+  // Função para atualizar o status visual da subtarefa selecionada com base no checklist
+  const updateSubtaskStatus = () => {
+    const selectedSubtask = document.querySelector('.subtask-item.selected');
+    if (!selectedSubtask) return;
+
+    const checklistContainer = document.querySelector('.checklist-container');
+    if (!checklistContainer) return;
+
+    const checkboxes = checklistContainer.querySelectorAll('input[type="checkbox"]');
+    const total = checkboxes.length;
+    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+
+    const statusSpan = selectedSubtask.querySelector('.item-status');
+    if (statusSpan) {
+      const isCompleted = checked === total && total > 0;
+      statusSpan.textContent = isCompleted ? `Concluída ${checked}/${total}` : `Pendente ${checked}/${total}`;
+      
+      statusSpan.classList.remove('status-completed', 'status-pending', 'status-warning');
+      statusSpan.classList.add(isCompleted ? 'status-completed' : 'status-pending');
+    }
+
+    updateSubtasksHeader();
+  };
+
+  // Função para atualizar o cabeçalho das subtarefas e o botão de conclusão da tarefa
+  const updateSubtasksHeader = () => {
+    const subtaskList = document.getElementById('subtask-list');
+    if (!subtaskList) return;
+
+    const items = subtaskList.querySelectorAll('.subtask-item');
+    const totalSubtasks = items.length;
+    let completedSubtasks = 0;
+
+    items.forEach(item => {
+      const statusText = item.querySelector('.item-status').textContent;
+      if (statusText.includes('Concluída')) {
+        completedSubtasks++;
+      }
+    });
+
+    // Atualiza o título do quadro de subtarefas
+    const subtaskHeader = document.getElementById('subtask-list')?.closest('.task-quadro')?.querySelector('.quadro-header h4');
+    if (subtaskHeader) {
+      subtaskHeader.textContent = `Subtarefas (${completedSubtasks}/${totalSubtasks})`;
+      if (completedSubtasks === totalSubtasks && totalSubtasks > 0) {
+        subtaskHeader.classList.remove('text-danger');
+        subtaskHeader.classList.add('status-completed-header');
+      } else {
+        subtaskHeader.classList.remove('status-completed-header');
+        subtaskHeader.classList.add('text-danger');
+      }
+    }
+
+    // Atualiza o botão "Concluir Tarefa"
+    const headerControls = document.querySelector('.task-header-controls');
+    if (headerControls) {
+      const buttons = headerControls.querySelectorAll('button');
+      let completeBtn = null;
+      buttons.forEach(btn => {
+        if (btn.textContent.includes('Concluir Tarefa')) completeBtn = btn;
+      });
+
+      if (completeBtn) {
+        const allCompleted = completedSubtasks === totalSubtasks && totalSubtasks > 0;
+        completeBtn.disabled = !allCompleted;
+        completeBtn.title = allCompleted ? 'Concluir esta tarefa' : 'Conclua todos os itens dos checklists para habilitar.';
+        
+        if (allCompleted) {
+          completeBtn.className = 'page-header-btn btn-important';
+          completeBtn.style.backgroundColor = '';
+          completeBtn.style.borderColor = '';
+          completeBtn.style.color = '';
+        } else {
+          completeBtn.className = 'page-header-btn';
+          completeBtn.style.backgroundColor = 'rgb(255, 205, 210)';
+          completeBtn.style.borderColor = '#ccc';
+          completeBtn.style.color = '#555';
+        }
+      }
+    }
   };
 
   const exibirDetalhesSubtarefa = (subtaskId) => {
@@ -1859,11 +2074,41 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     const chk2Checked = (isSubtask2) ? 'checked' : '';
     const chk3Checked = (isSubtask2) ? 'checked' : '';
 
+    // Verifica se a subtarefa já está visualmente marcada como delegada para manter o estado
+    const selectedSubtaskItem = document.querySelector(`.subtask-item[data-subtask-id="${subtaskId}"]`);
+    const isDelegated = selectedSubtaskItem ? selectedSubtaskItem.classList.contains('delegated') : false;
+
     dynamicArea.innerHTML = `
+        <!-- Quadro de Delegação -->
+        <div class="task-quadro task-col-item" style="flex: 0 1 auto; min-width: 200px; max-width: 250px;">
+          <div class="quadro-header">
+            <h4>Delegação</h4>
+          </div>
+          <div class="form-container" style="flex-direction: column; gap: 10px;">
+            <div class="checkbox-container">
+                <input type="checkbox" id="delegate-subtask-check" ${isDelegated ? 'checked' : ''}>
+                <label for="delegate-subtask-check">Delegar subtarefa</label>
+            </div>
+            <div class="form-field" style="width: 100%;">
+                <label for="delegate-user-select">Para:</label>
+                <select id="delegate-user-select" class="form-input" ${isDelegated ? '' : 'disabled'}>
+                    <option value="">Selecione um usuário...</option>
+                    <option value="u1">Fulano de Tal</option>
+                    <option value="u2">Ciclano da Silva</option>
+                    <option value="u3">Beltrano Souza</option>
+                </select>
+            </div>
+            <small class="text-muted" style="font-size: 11px; line-height: 1.2;">
+                Ao ser delegada, esta subtarefa será listada na lista de tarefas desse usuário.
+            </small>
+          </div>
+        </div>
+
         <!-- Quadro de Checklist -->
         <div class="task-quadro task-col-item">
           <div class="quadro-header">
             <h4>Checklist da Subtarefa #${subtaskId}</h4>
+            <button class="icon-btn add-checklist-item-btn" title="Adicionar Item">+</button>
           </div>
           <ul class="checklist-container">
             <li><input type="checkbox" id="chk1" ${chk1Checked}> <label for="chk1">Item 1 do checklist (ex: Cópia do RG)</label><button class="table-action-btn checklist-instruction-btn" title="Ver Instruções">🔎</button></li>
@@ -2065,6 +2310,17 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
 
         <div class="document-form-row">
           <div class="form-field">
+            <label for="setting-doc-emission">Data de Emissão:</label>
+            <input type="date" id="setting-doc-emission" class="form-input">
+          </div>
+          <div class="form-field">
+            <label for="setting-doc-expiry">Data de Validade:</label>
+            <input type="date" id="setting-doc-expiry" class="form-input">
+          </div>
+        </div>
+
+        <div class="document-form-row">
+          <div class="form-field">
             <label for="setting-doc-validity">Validade (dias):</label>
             <input type="number" id="setting-doc-validity" class="form-input" value="${docValidity}" placeholder="Ex: 365">
           </div>
@@ -2090,6 +2346,48 @@ Use os quadros abaixo para adicionar novas informações ao histórico da tarefa
     const typeSelect = document.getElementById('setting-doc-type');
     const validityInput = document.getElementById('setting-doc-validity');
     const nameInput = document.getElementById('setting-doc-name');
+    const emissionInput = document.getElementById('setting-doc-emission');
+    const expiryInput = document.getElementById('setting-doc-expiry');
+
+    // Função de cálculo de datas com salvaguardas
+    const calculateDates = (trigger) => {
+        const emissionVal = emissionInput.value;
+        const expiryVal = expiryInput.value;
+        const validityVal = parseInt(validityInput.value, 10);
+
+        const emissionDate = emissionVal ? new Date(emissionVal) : null;
+        const expiryDate = expiryVal ? new Date(expiryVal) : null;
+        
+        // Helper para formatar YYYY-MM-DD
+        const toISODate = (d) => d.toISOString().split('T')[0];
+
+        if (trigger === 'validity') {
+            // Editou Validade (dias) -> Calcula Data Validade (se tiver emissão válida)
+            if (emissionDate && !isNaN(emissionDate.getTime()) && !isNaN(validityVal)) {
+                const newExpiry = new Date(emissionDate);
+                newExpiry.setDate(newExpiry.getDate() + validityVal);
+                expiryInput.value = toISODate(newExpiry);
+            }
+        } else if (trigger === 'expiry') {
+            // Editou Data Validade -> Calcula Validade (dias) (se tiver emissão válida)
+            if (emissionDate && !isNaN(emissionDate.getTime()) && expiryDate && !isNaN(expiryDate.getTime())) {
+                const diffTime = expiryDate - emissionDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                validityInput.value = diffDays;
+            }
+        } else if (trigger === 'emission') {
+            // Editou Emissão -> Se validade (dias) > 0, calcula Data Validade
+            if (!isNaN(validityVal) && validityVal > 0 && emissionDate && !isNaN(emissionDate.getTime())) {
+                const newExpiry = new Date(emissionDate);
+                newExpiry.setDate(newExpiry.getDate() + validityVal);
+                expiryInput.value = toISODate(newExpiry);
+            }
+        }
+    };
+
+    if (emissionInput) emissionInput.addEventListener('change', () => calculateDates('emission'));
+    if (expiryInput) expiryInput.addEventListener('change', () => calculateDates('expiry'));
+    if (validityInput) validityInput.addEventListener('input', () => calculateDates('validity'));
 
     if (typeSelect) {
       typeSelect.addEventListener('change', (e) => {

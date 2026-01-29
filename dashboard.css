@@ -478,6 +478,11 @@ h2 { font-size: 24px; }
     background-color: #f0f2f7;
 }
 
+.subtask-item.delegated {
+    background-color: #fff9c4; /* Amarelo Claro */
+    border-color: #ffe082;
+}
+
 .subtask-item.blocked {
     background-color: #f5f5f5;
     color: #aaa;

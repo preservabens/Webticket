@@ -66,7 +66,13 @@ Esta é a área de trabalho principal. Ela é composta por vários "quadros".
 
 ### 4.4. Área de Detalhes da Subtarefa (Dinâmica)
 
-Esta área aparece quando uma subtarefa é selecionada e contém dois quadros lado a lado:
+Esta área aparece quando uma subtarefa é selecionada e contém quadros organizados lado a lado:
+
+*   **Quadro "Delegação":**
+    *   Um quadro pequeno que permite transferir a responsabilidade da subtarefa.
+    *   Contém um checkbox "Delegar subtarefa" e um combobox para selecionar o usuário.
+    *   **Regra Visual:** Ao delegar uma subtarefa, o item correspondente na lista de subtarefas fica **amarelo**.
+    *   **Regra de Negócio:** Ao ser delegada, a subtarefa passará a constar na lista de tarefas do usuário selecionado.
 
 *   **Quadro "Checklist da Subtarefa":**
     *   Exibe os itens específicos a serem verificados para aquela subtarefa.
